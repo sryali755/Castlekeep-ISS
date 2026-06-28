@@ -1,0 +1,8 @@
+{
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/orchestrate/route": "app/api/orchestrate/route.js",
+  "/iss/page": "app/iss/page.js",
+  "/nl-query/page": "app/nl-query/page.js",
+  "/page": "app/page.js"
+}

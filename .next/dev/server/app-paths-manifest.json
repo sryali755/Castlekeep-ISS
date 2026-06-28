@@ -1,0 +1,4 @@
+{
+  "/api/orchestrate/route": "app/api/orchestrate/route.js",
+  "/iss/page": "app/iss/page.js"
+}
