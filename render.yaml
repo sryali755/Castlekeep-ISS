@@ -2,7 +2,10 @@ services:
   - type: web
     name: castlekeep-iss
     env: node
-    region: oregon
+    region: us-east-1
     plan: free
-    buildCommand: npm install && npm run build
+    buildCommand: npm ci && npm run build
     startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
