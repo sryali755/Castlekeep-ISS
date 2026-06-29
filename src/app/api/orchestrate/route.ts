@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
       summary
     );
 
-    return new NextResponse(excelBuffer, {
+    return new NextResponse(excelBuffer as any, {
       status: 200,
       headers: {
         'Content-Disposition': `attachment; filename="Atlas_Test_Plan_${requestNumber}_${Date.now()}.xlsx"`,

@@ -44,7 +44,7 @@ export class ExcelGenerator {
         bold: true,
         color: { argb: 'FFFFFFFF' }, // White text
       };
-      cell.alignment = { horizontal: 'center', vertical: 'center', wrapText: true };
+      cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
     });
 
     // Add data rows with color coding
@@ -76,7 +76,7 @@ export class ExcelGenerator {
           pattern: 'solid',
           fgColor: { argb: bgColor },
         };
-        cell.alignment = { horizontal: 'left', vertical: 'center', wrapText: true };
+        cell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
       });
     });
 
@@ -137,7 +137,7 @@ export class ExcelGenerator {
         bold: true,
         color: { argb: 'FFFFFFFF' }, // White text
       };
-      cell.alignment = { horizontal: 'center', vertical: 'center', wrapText: true };
+      cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
     });
 
     // Add data rows with color coding
@@ -169,7 +169,7 @@ export class ExcelGenerator {
           pattern: 'solid',
           fgColor: { argb: bgColor },
         };
-        cell.alignment = { horizontal: 'left', vertical: 'center', wrapText: true };
+        cell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
       });
     });
 
@@ -181,7 +181,7 @@ export class ExcelGenerator {
     worksheet.views = [{ state: 'frozen', ySplit: 1 }];
 
     // Return buffer
-    return await workbook.xlsx.writeBuffer();
+    return await workbook.xlsx.writeBuffer() as any;
   }
 
   private static formatTestData(tests: TestCase[]): string[][] {
