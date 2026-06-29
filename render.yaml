@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: castlekeep-iss
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install --legacy-peer-deps && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NPM_FLAG_LEGACY_PEER_DEPS
+        value: "true"

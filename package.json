@@ -22,8 +22,6 @@
     "typescript": "^5.3.3"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.8",
-    "@types/papaparse": "^5.3.14",
     "@types/pg": "^8.20.0",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.31"
