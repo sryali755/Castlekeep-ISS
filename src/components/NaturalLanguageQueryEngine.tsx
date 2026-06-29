@@ -8,7 +8,7 @@ import {
   Search,
   Sparkles,
   Tags,
-} from 'lucide-react';
+} from '@/lib/icons';
 import { OfferProcessor } from '@/lib/offerProcessor';
 import { OfferRecord } from '@/lib/types';
 

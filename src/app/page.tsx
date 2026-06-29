@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { FileSpreadsheet, MessageSquareText } from 'lucide-react';
+import { FileSpreadsheet, MessageSquareText } from '@/lib/icons';
 
 const tools = [
   {

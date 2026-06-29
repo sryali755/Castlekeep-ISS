@@ -1,0 +1,9030 @@
+module.exports = [
+"[project]/node_modules/next/dist/esm/server/request-meta.js [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+// FIXME: (wyattjoh) this is a temporary solution to allow us to pass data between bundled modules
+__turbopack_context__.s([
+    "NEXT_REQUEST_META",
+    ()=>NEXT_REQUEST_META,
+    "addRequestMeta",
+    ()=>addRequestMeta,
+    "getRequestMeta",
+    ()=>getRequestMeta,
+    "removeRequestMeta",
+    ()=>removeRequestMeta,
+    "setRequestMeta",
+    ()=>setRequestMeta
+]);
+const NEXT_REQUEST_META = Symbol.for('NextInternalRequestMeta');
+function getRequestMeta(req, key) {
+    const meta = req[NEXT_REQUEST_META] || {};
+    return typeof key === 'string' ? meta[key] : meta;
+}
+function setRequestMeta(req, meta) {
+    req[NEXT_REQUEST_META] = meta;
+    return meta;
+}
+function addRequestMeta(request, key, value) {
+    const meta = getRequestMeta(request);
+    meta[key] = value;
+    return setRequestMeta(request, meta);
+}
+function removeRequestMeta(request, key) {
+    const meta = getRequestMeta(request);
+    delete meta[key];
+    return setRequestMeta(request, meta);
+}
+}),
+"[project]/node_modules/next/dist/esm/shared/lib/page-path/ensure-leading-slash.js [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+/**
+ * For a given page path, this function ensures that there is a leading slash.
+ * If there is not a leading slash, one is added, otherwise it is noop.
+ */ __turbopack_context__.s([
+    "ensureLeadingSlash",
+    ()=>ensureLeadingSlash
+]);
+function ensureLeadingSlash(path) {
+    return path.startsWith('/') ? path : `/${path}`;
+}
+}),
+"[project]/node_modules/next/dist/esm/shared/lib/segment.js [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "DEFAULT_SEGMENT_KEY",
+    ()=>DEFAULT_SEGMENT_KEY,
+    "NOT_FOUND_SEGMENT_KEY",
+    ()=>NOT_FOUND_SEGMENT_KEY,
+    "PAGE_SEGMENT_KEY",
+    ()=>PAGE_SEGMENT_KEY,
+    "addSearchParamsIfPageSegment",
+    ()=>addSearchParamsIfPageSegment,
+    "computeSelectedLayoutSegment",
+    ()=>computeSelectedLayoutSegment,
+    "getSegmentValue",
+    ()=>getSegmentValue,
+    "getSelectedLayoutSegmentPath",
+    ()=>getSelectedLayoutSegmentPath,
+    "isGroupSegment",
+    ()=>isGroupSegment,
+    "isParallelRouteSegment",
+    ()=>isParallelRouteSegment
+]);
+function getSegmentValue(segment) {
+    return Array.isArray(segment) ? segment[1] : segment;
+}
+function isGroupSegment(segment) {
+    // Use array[0] for performant purpose
+    return segment[0] === '(' && segment.endsWith(')');
+}
+function isParallelRouteSegment(segment) {
+    return segment.startsWith('@') && segment !== '@children';
+}
+function addSearchParamsIfPageSegment(segment, searchParams) {
+    const isPageSegment = segment.includes(PAGE_SEGMENT_KEY);
+    if (isPageSegment) {
+        const stringifiedQuery = JSON.stringify(searchParams);
+        return stringifiedQuery !== '{}' ? PAGE_SEGMENT_KEY + '?' + stringifiedQuery : PAGE_SEGMENT_KEY;
+    }
+    return segment;
+}
+function computeSelectedLayoutSegment(segments, parallelRouteKey) {
+    if (!segments || segments.length === 0) {
+        return null;
+    }
+    // For 'children', use first segment; for other parallel routes, use last segment
+    const rawSegment = parallelRouteKey === 'children' ? segments[0] : segments[segments.length - 1];
+    // If the default slot is showing, return null since it's not technically "selected" (it's a fallback)
+    // Returning an internal value like `__DEFAULT__` would be confusing
+    return rawSegment === DEFAULT_SEGMENT_KEY ? null : rawSegment;
+}
+function getSelectedLayoutSegmentPath(tree, parallelRouteKey, first = true, segmentPath = []) {
+    let node;
+    if (first) {
+        // Use the provided parallel route key on the first parallel route
+        node = tree[1][parallelRouteKey];
+    } else {
+        // After first parallel route prefer children, if there's no children pick the first parallel route.
+        const parallelRoutes = tree[1];
+        node = parallelRoutes.children ?? Object.values(parallelRoutes)[0];
+    }
+    if (!node) return segmentPath;
+    const segment = node[0];
+    let segmentValue = getSegmentValue(segment);
+    if (!segmentValue || segmentValue.startsWith(PAGE_SEGMENT_KEY)) {
+        return segmentPath;
+    }
+    segmentPath.push(segmentValue);
+    return getSelectedLayoutSegmentPath(node, parallelRouteKey, false, segmentPath);
+}
+const PAGE_SEGMENT_KEY = '__PAGE__';
+const DEFAULT_SEGMENT_KEY = '__DEFAULT__';
+const NOT_FOUND_SEGMENT_KEY = '/_not-found';
+}),
+"[project]/node_modules/next/dist/esm/shared/lib/router/utils/app-paths.js [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "compareAppPaths",
+    ()=>compareAppPaths,
+    "normalizeAppPath",
+    ()=>normalizeAppPath,
+    "normalizeRscURL",
+    ()=>normalizeRscURL
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$shared$2f$lib$2f$page$2d$path$2f$ensure$2d$leading$2d$slash$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/shared/lib/page-path/ensure-leading-slash.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$shared$2f$lib$2f$segment$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/shared/lib/segment.js [app-route] (ecmascript)");
+;
+;
+function normalizeAppPath(route) {
+    return (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$shared$2f$lib$2f$page$2d$path$2f$ensure$2d$leading$2d$slash$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["ensureLeadingSlash"])(route.split('/').reduce((pathname, segment, index, segments)=>{
+        // Empty segments are ignored.
+        if (!segment) {
+            return pathname;
+        }
+        // Groups are ignored.
+        if ((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$shared$2f$lib$2f$segment$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["isGroupSegment"])(segment)) {
+            return pathname;
+        }
+        // Parallel segments are ignored.
+        if (segment[0] === '@') {
+            return pathname;
+        }
+        // The last segment (if it's a leaf) should be ignored.
+        if ((segment === 'page' || segment === 'route') && index === segments.length - 1) {
+            return pathname;
+        }
+        return `${pathname}/${segment}`;
+    }, ''));
+}
+function compareAppPaths(a, b) {
+    const aHasSlot = a.includes('/@');
+    const bHasSlot = b.includes('/@');
+    if (aHasSlot && !bHasSlot) return -1;
+    if (!aHasSlot && bHasSlot) return 1;
+    return a.localeCompare(b);
+}
+function normalizeRscURL(url) {
+    return url.replace(/\.rsc($|\?)/, '$1');
+}
+}),
+"[project]/node_modules/next/dist/esm/lib/constants.js [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "ACTION_SUFFIX",
+    ()=>ACTION_SUFFIX,
+    "APP_DIR_ALIAS",
+    ()=>APP_DIR_ALIAS,
+    "CACHE_ONE_YEAR_SECONDS",
+    ()=>CACHE_ONE_YEAR_SECONDS,
+    "DOT_NEXT_ALIAS",
+    ()=>DOT_NEXT_ALIAS,
+    "ESLINT_DEFAULT_DIRS",
+    ()=>ESLINT_DEFAULT_DIRS,
+    "GSP_NO_RETURNED_VALUE",
+    ()=>GSP_NO_RETURNED_VALUE,
+    "GSSP_COMPONENT_MEMBER_ERROR",
+    ()=>GSSP_COMPONENT_MEMBER_ERROR,
+    "GSSP_NO_RETURNED_VALUE",
+    ()=>GSSP_NO_RETURNED_VALUE,
+    "HTML_CONTENT_TYPE_HEADER",
+    ()=>HTML_CONTENT_TYPE_HEADER,
+    "INFINITE_CACHE",
+    ()=>INFINITE_CACHE,
+    "INSTRUMENTATION_HOOK_FILENAME",
+    ()=>INSTRUMENTATION_HOOK_FILENAME,
+    "JSON_CONTENT_TYPE_HEADER",
+    ()=>JSON_CONTENT_TYPE_HEADER,
+    "MATCHED_PATH_HEADER",
+    ()=>MATCHED_PATH_HEADER,
+    "MIDDLEWARE_FILENAME",
+    ()=>MIDDLEWARE_FILENAME,
+    "MIDDLEWARE_LOCATION_REGEXP",
+    ()=>MIDDLEWARE_LOCATION_REGEXP,
+    "NEXT_BODY_SUFFIX",
+    ()=>NEXT_BODY_SUFFIX,
+    "NEXT_CACHE_IMPLICIT_TAG_ID",
+    ()=>NEXT_CACHE_IMPLICIT_TAG_ID,
+    "NEXT_CACHE_REVALIDATED_TAGS_HEADER",
+    ()=>NEXT_CACHE_REVALIDATED_TAGS_HEADER,
+    "NEXT_CACHE_REVALIDATE_TAG_TOKEN_HEADER",
+    ()=>NEXT_CACHE_REVALIDATE_TAG_TOKEN_HEADER,
+    "NEXT_CACHE_ROOT_PARAM_TAG_ID",
+    ()=>NEXT_CACHE_ROOT_PARAM_TAG_ID,
+    "NEXT_CACHE_SOFT_TAG_MAX_LENGTH",
+    ()=>NEXT_CACHE_SOFT_TAG_MAX_LENGTH,
+    "NEXT_CACHE_TAGS_HEADER",
+    ()=>NEXT_CACHE_TAGS_HEADER,
+    "NEXT_CACHE_TAG_MAX_ITEMS",
+    ()=>NEXT_CACHE_TAG_MAX_ITEMS,
+    "NEXT_CACHE_TAG_MAX_LENGTH",
+    ()=>NEXT_CACHE_TAG_MAX_LENGTH,
+    "NEXT_DATA_SUFFIX",
+    ()=>NEXT_DATA_SUFFIX,
+    "NEXT_INTERCEPTION_MARKER_PREFIX",
+    ()=>NEXT_INTERCEPTION_MARKER_PREFIX,
+    "NEXT_META_SUFFIX",
+    ()=>NEXT_META_SUFFIX,
+    "NEXT_NAV_DEPLOYMENT_ID_HEADER",
+    ()=>NEXT_NAV_DEPLOYMENT_ID_HEADER,
+    "NEXT_QUERY_PARAM_PREFIX",
+    ()=>NEXT_QUERY_PARAM_PREFIX,
+    "NEXT_RESUME_HEADER",
+    ()=>NEXT_RESUME_HEADER,
+    "NEXT_RESUME_STATE_LENGTH_HEADER",
+    ()=>NEXT_RESUME_STATE_LENGTH_HEADER,
+    "NON_STANDARD_NODE_ENV",
+    ()=>NON_STANDARD_NODE_ENV,
+    "PAGES_DIR_ALIAS",
+    ()=>PAGES_DIR_ALIAS,
+    "PRERENDER_REVALIDATE_HEADER",
+    ()=>PRERENDER_REVALIDATE_HEADER,
+    "PRERENDER_REVALIDATE_ONLY_GENERATED_HEADER",
+    ()=>PRERENDER_REVALIDATE_ONLY_GENERATED_HEADER,
+    "PROXY_FILENAME",
+    ()=>PROXY_FILENAME,
+    "PROXY_LOCATION_REGEXP",
+    ()=>PROXY_LOCATION_REGEXP,
+    "PUBLIC_DIR_MIDDLEWARE_CONFLICT",
+    ()=>PUBLIC_DIR_MIDDLEWARE_CONFLICT,
+    "ROOT_DIR_ALIAS",
+    ()=>ROOT_DIR_ALIAS,
+    "RSC_ACTION_CLIENT_WRAPPER_ALIAS",
+    ()=>RSC_ACTION_CLIENT_WRAPPER_ALIAS,
+    "RSC_ACTION_ENCRYPTION_ALIAS",
+    ()=>RSC_ACTION_ENCRYPTION_ALIAS,
+    "RSC_ACTION_PROXY_ALIAS",
+    ()=>RSC_ACTION_PROXY_ALIAS,
+    "RSC_ACTION_VALIDATE_ALIAS",
+    ()=>RSC_ACTION_VALIDATE_ALIAS,
+    "RSC_CACHE_WRAPPER_ALIAS",
+    ()=>RSC_CACHE_WRAPPER_ALIAS,
+    "RSC_DYNAMIC_IMPORT_WRAPPER_ALIAS",
+    ()=>RSC_DYNAMIC_IMPORT_WRAPPER_ALIAS,
+    "RSC_MOD_REF_PROXY_ALIAS",
+    ()=>RSC_MOD_REF_PROXY_ALIAS,
+    "RSC_SEGMENTS_DIR_SUFFIX",
+    ()=>RSC_SEGMENTS_DIR_SUFFIX,
+    "RSC_SEGMENT_SUFFIX",
+    ()=>RSC_SEGMENT_SUFFIX,
+    "RSC_SUFFIX",
+    ()=>RSC_SUFFIX,
+    "SERVER_PROPS_EXPORT_ERROR",
+    ()=>SERVER_PROPS_EXPORT_ERROR,
+    "SERVER_PROPS_GET_INIT_PROPS_CONFLICT",
+    ()=>SERVER_PROPS_GET_INIT_PROPS_CONFLICT,
+    "SERVER_PROPS_SSG_CONFLICT",
+    ()=>SERVER_PROPS_SSG_CONFLICT,
+    "SERVER_RUNTIME",
+    ()=>SERVER_RUNTIME,
+    "SSG_FALLBACK_EXPORT_ERROR",
+    ()=>SSG_FALLBACK_EXPORT_ERROR,
+    "SSG_GET_INITIAL_PROPS_CONFLICT",
+    ()=>SSG_GET_INITIAL_PROPS_CONFLICT,
+    "STATIC_STATUS_PAGE_GET_INITIAL_PROPS_ERROR",
+    ()=>STATIC_STATUS_PAGE_GET_INITIAL_PROPS_ERROR,
+    "TEXT_PLAIN_CONTENT_TYPE_HEADER",
+    ()=>TEXT_PLAIN_CONTENT_TYPE_HEADER,
+    "UNSTABLE_REVALIDATE_RENAME_ERROR",
+    ()=>UNSTABLE_REVALIDATE_RENAME_ERROR,
+    "WEBPACK_LAYERS",
+    ()=>WEBPACK_LAYERS,
+    "WEBPACK_RESOURCE_QUERIES",
+    ()=>WEBPACK_RESOURCE_QUERIES,
+    "WEB_SOCKET_MAX_RECONNECTIONS",
+    ()=>WEB_SOCKET_MAX_RECONNECTIONS
+]);
+const TEXT_PLAIN_CONTENT_TYPE_HEADER = 'text/plain';
+const HTML_CONTENT_TYPE_HEADER = 'text/html; charset=utf-8';
+const JSON_CONTENT_TYPE_HEADER = 'application/json; charset=utf-8';
+const NEXT_QUERY_PARAM_PREFIX = 'nxtP';
+const NEXT_INTERCEPTION_MARKER_PREFIX = 'nxtI';
+const MATCHED_PATH_HEADER = 'x-matched-path';
+const PRERENDER_REVALIDATE_HEADER = 'x-prerender-revalidate';
+const PRERENDER_REVALIDATE_ONLY_GENERATED_HEADER = 'x-prerender-revalidate-if-generated';
+const RSC_SEGMENTS_DIR_SUFFIX = '.segments';
+const RSC_SEGMENT_SUFFIX = '.segment.rsc';
+const RSC_SUFFIX = '.rsc';
+const ACTION_SUFFIX = '.action';
+const NEXT_DATA_SUFFIX = '.json';
+const NEXT_META_SUFFIX = '.meta';
+const NEXT_BODY_SUFFIX = '.body';
+const NEXT_NAV_DEPLOYMENT_ID_HEADER = 'x-nextjs-deployment-id';
+const NEXT_CACHE_TAGS_HEADER = 'x-next-cache-tags';
+const NEXT_CACHE_REVALIDATED_TAGS_HEADER = 'x-next-revalidated-tags';
+const NEXT_CACHE_REVALIDATE_TAG_TOKEN_HEADER = 'x-next-revalidate-tag-token';
+const NEXT_RESUME_HEADER = 'next-resume';
+const NEXT_RESUME_STATE_LENGTH_HEADER = 'x-next-resume-state-length';
+const NEXT_CACHE_TAG_MAX_ITEMS = 128;
+const NEXT_CACHE_TAG_MAX_LENGTH = 256;
+const NEXT_CACHE_SOFT_TAG_MAX_LENGTH = 1024;
+const NEXT_CACHE_IMPLICIT_TAG_ID = '_N_T_';
+const NEXT_CACHE_ROOT_PARAM_TAG_ID = '_N_RP_';
+const CACHE_ONE_YEAR_SECONDS = 31536000;
+const INFINITE_CACHE = 0xfffffffe;
+const MIDDLEWARE_FILENAME = 'middleware';
+const MIDDLEWARE_LOCATION_REGEXP = `(?:src/)?${MIDDLEWARE_FILENAME}`;
+const PROXY_FILENAME = 'proxy';
+const PROXY_LOCATION_REGEXP = `(?:src/)?${PROXY_FILENAME}`;
+const INSTRUMENTATION_HOOK_FILENAME = 'instrumentation';
+const PAGES_DIR_ALIAS = 'private-next-pages';
+const DOT_NEXT_ALIAS = 'private-dot-next';
+const ROOT_DIR_ALIAS = 'private-next-root-dir';
+const APP_DIR_ALIAS = 'private-next-app-dir';
+const RSC_MOD_REF_PROXY_ALIAS = 'private-next-rsc-mod-ref-proxy';
+const RSC_ACTION_VALIDATE_ALIAS = 'private-next-rsc-action-validate';
+const RSC_ACTION_PROXY_ALIAS = 'private-next-rsc-server-reference';
+const RSC_CACHE_WRAPPER_ALIAS = 'private-next-rsc-cache-wrapper';
+const RSC_DYNAMIC_IMPORT_WRAPPER_ALIAS = 'private-next-rsc-track-dynamic-import';
+const RSC_ACTION_ENCRYPTION_ALIAS = 'private-next-rsc-action-encryption';
+const RSC_ACTION_CLIENT_WRAPPER_ALIAS = 'private-next-rsc-action-client-wrapper';
+const PUBLIC_DIR_MIDDLEWARE_CONFLICT = `You can not have a '_next' folder inside of your public folder. This conflicts with the internal '/_next' route. https://nextjs.org/docs/messages/public-next-folder-conflict`;
+const SSG_GET_INITIAL_PROPS_CONFLICT = `You can not use getInitialProps with getStaticProps. To use SSG, please remove your getInitialProps`;
+const SERVER_PROPS_GET_INIT_PROPS_CONFLICT = `You can not use getInitialProps with getServerSideProps. Please remove getInitialProps.`;
+const SERVER_PROPS_SSG_CONFLICT = `You can not use getStaticProps or getStaticPaths with getServerSideProps. To use SSG, please remove getServerSideProps`;
+const STATIC_STATUS_PAGE_GET_INITIAL_PROPS_ERROR = `can not have getInitialProps/getServerSideProps, https://nextjs.org/docs/messages/404-get-initial-props`;
+const SERVER_PROPS_EXPORT_ERROR = `pages with \`getServerSideProps\` can not be exported. See more info here: https://nextjs.org/docs/messages/gssp-export`;
+const GSP_NO_RETURNED_VALUE = 'Your `getStaticProps` function did not return an object. Did you forget to add a `return`?';
+const GSSP_NO_RETURNED_VALUE = 'Your `getServerSideProps` function did not return an object. Did you forget to add a `return`?';
+const UNSTABLE_REVALIDATE_RENAME_ERROR = 'The `unstable_revalidate` property is available for general use.\n' + 'Please use `revalidate` instead.';
+const GSSP_COMPONENT_MEMBER_ERROR = `can not be attached to a page's component and must be exported from the page. See more info here: https://nextjs.org/docs/messages/gssp-component-member`;
+const NON_STANDARD_NODE_ENV = `You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env`;
+const SSG_FALLBACK_EXPORT_ERROR = `Pages with \`fallback\` enabled in \`getStaticPaths\` can not be exported. See more info here: https://nextjs.org/docs/messages/ssg-fallback-true-export`;
+const ESLINT_DEFAULT_DIRS = [
+    'app',
+    'pages',
+    'components',
+    'lib',
+    'src'
+];
+const SERVER_RUNTIME = {
+    edge: 'edge',
+    experimentalEdge: 'experimental-edge',
+    nodejs: 'nodejs'
+};
+const WEB_SOCKET_MAX_RECONNECTIONS = 12;
+/**
+ * The names of the webpack layers. These layers are the primitives for the
+ * webpack chunks.
+ */ const WEBPACK_LAYERS_NAMES = {
+    /**
+   * The layer for the shared code between the client and server bundles.
+   */ shared: 'shared',
+    /**
+   * The layer for server-only runtime and picking up `react-server` export conditions.
+   * Including app router RSC pages and app router custom routes and metadata routes.
+   */ reactServerComponents: 'rsc',
+    /**
+   * Server Side Rendering layer for app (ssr).
+   */ serverSideRendering: 'ssr',
+    /**
+   * The browser client bundle layer for actions.
+   */ actionBrowser: 'action-browser',
+    /**
+   * The Node.js bundle layer for the API routes.
+   */ apiNode: 'api-node',
+    /**
+   * The Edge Lite bundle layer for the API routes.
+   */ apiEdge: 'api-edge',
+    /**
+   * The layer for the middleware code.
+   */ middleware: 'middleware',
+    /**
+   * The layer for the instrumentation hooks.
+   */ instrument: 'instrument',
+    /**
+   * The layer for assets on the edge.
+   */ edgeAsset: 'edge-asset',
+    /**
+   * The browser client bundle layer for App directory.
+   */ appPagesBrowser: 'app-pages-browser',
+    /**
+   * The browser client bundle layer for Pages directory.
+   */ pagesDirBrowser: 'pages-dir-browser',
+    /**
+   * The Edge Lite bundle layer for Pages directory.
+   */ pagesDirEdge: 'pages-dir-edge',
+    /**
+   * The Node.js bundle layer for Pages directory.
+   */ pagesDirNode: 'pages-dir-node'
+};
+const WEBPACK_LAYERS = {
+    ...WEBPACK_LAYERS_NAMES,
+    GROUP: {
+        builtinReact: [
+            WEBPACK_LAYERS_NAMES.reactServerComponents,
+            WEBPACK_LAYERS_NAMES.actionBrowser
+        ],
+        serverOnly: [
+            WEBPACK_LAYERS_NAMES.reactServerComponents,
+            WEBPACK_LAYERS_NAMES.actionBrowser,
+            WEBPACK_LAYERS_NAMES.instrument,
+            WEBPACK_LAYERS_NAMES.middleware
+        ],
+        neutralTarget: [
+            // pages api
+            WEBPACK_LAYERS_NAMES.apiNode,
+            WEBPACK_LAYERS_NAMES.apiEdge
+        ],
+        clientOnly: [
+            WEBPACK_LAYERS_NAMES.serverSideRendering,
+            WEBPACK_LAYERS_NAMES.appPagesBrowser
+        ],
+        bundled: [
+            WEBPACK_LAYERS_NAMES.reactServerComponents,
+            WEBPACK_LAYERS_NAMES.actionBrowser,
+            WEBPACK_LAYERS_NAMES.serverSideRendering,
+            WEBPACK_LAYERS_NAMES.appPagesBrowser,
+            WEBPACK_LAYERS_NAMES.shared,
+            WEBPACK_LAYERS_NAMES.instrument,
+            WEBPACK_LAYERS_NAMES.middleware
+        ],
+        appPages: [
+            // app router pages and layouts
+            WEBPACK_LAYERS_NAMES.reactServerComponents,
+            WEBPACK_LAYERS_NAMES.serverSideRendering,
+            WEBPACK_LAYERS_NAMES.appPagesBrowser,
+            WEBPACK_LAYERS_NAMES.actionBrowser
+        ]
+    }
+};
+const WEBPACK_RESOURCE_QUERIES = {
+    edgeSSREntry: '__next_edge_ssr_entry__',
+    metadata: '__next_metadata__',
+    metadataRoute: '__next_metadata_route__',
+    metadataImageMeta: '__next_metadata_image_meta__'
+};
+;
+}),
+"[project]/node_modules/next/dist/compiled/cookie/index.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+
+(()=>{
+    "use strict";
+    if (typeof __nccwpck_require__ !== "undefined") __nccwpck_require__.ab = ("TURBOPACK compile-time value", "/ROOT/node_modules/next/dist/compiled/cookie") + "/";
+    var e = {};
+    (()=>{
+        var r = e;
+        /*!
+ * cookie
+ * Copyright(c) 2012-2014 Roman Shtylman
+ * Copyright(c) 2015 Douglas Christopher Wilson
+ * MIT Licensed
+ */ r.parse = parse;
+        r.serialize = serialize;
+        var i = decodeURIComponent;
+        var t = encodeURIComponent;
+        var a = /; */;
+        var n = /^[\u0009\u0020-\u007e\u0080-\u00ff]+$/;
+        function parse(e, r) {
+            if (typeof e !== "string") {
+                throw new TypeError("argument str must be a string");
+            }
+            var t = {};
+            var n = r || {};
+            var o = e.split(a);
+            var s = n.decode || i;
+            for(var p = 0; p < o.length; p++){
+                var f = o[p];
+                var u = f.indexOf("=");
+                if (u < 0) {
+                    continue;
+                }
+                var v = f.substr(0, u).trim();
+                var c = f.substr(++u, f.length).trim();
+                if ('"' == c[0]) {
+                    c = c.slice(1, -1);
+                }
+                if (undefined == t[v]) {
+                    t[v] = tryDecode(c, s);
+                }
+            }
+            return t;
+        }
+        function serialize(e, r, i) {
+            var a = i || {};
+            var o = a.encode || t;
+            if (typeof o !== "function") {
+                throw new TypeError("option encode is invalid");
+            }
+            if (!n.test(e)) {
+                throw new TypeError("argument name is invalid");
+            }
+            var s = o(r);
+            if (s && !n.test(s)) {
+                throw new TypeError("argument val is invalid");
+            }
+            var p = e + "=" + s;
+            if (null != a.maxAge) {
+                var f = a.maxAge - 0;
+                if (isNaN(f) || !isFinite(f)) {
+                    throw new TypeError("option maxAge is invalid");
+                }
+                p += "; Max-Age=" + Math.floor(f);
+            }
+            if (a.domain) {
+                if (!n.test(a.domain)) {
+                    throw new TypeError("option domain is invalid");
+                }
+                p += "; Domain=" + a.domain;
+            }
+            if (a.path) {
+                if (!n.test(a.path)) {
+                    throw new TypeError("option path is invalid");
+                }
+                p += "; Path=" + a.path;
+            }
+            if (a.expires) {
+                if (typeof a.expires.toUTCString !== "function") {
+                    throw new TypeError("option expires is invalid");
+                }
+                p += "; Expires=" + a.expires.toUTCString();
+            }
+            if (a.httpOnly) {
+                p += "; HttpOnly";
+            }
+            if (a.secure) {
+                p += "; Secure";
+            }
+            if (a.sameSite) {
+                var u = typeof a.sameSite === "string" ? a.sameSite.toLowerCase() : a.sameSite;
+                switch(u){
+                    case true:
+                        p += "; SameSite=Strict";
+                        break;
+                    case "lax":
+                        p += "; SameSite=Lax";
+                        break;
+                    case "strict":
+                        p += "; SameSite=Strict";
+                        break;
+                    case "none":
+                        p += "; SameSite=None";
+                        break;
+                    default:
+                        throw new TypeError("option sameSite is invalid");
+                }
+            }
+            return p;
+        }
+        function tryDecode(e, r) {
+            try {
+                return r(e);
+            } catch (r) {
+                return e;
+            }
+        }
+    })();
+    module.exports = e;
+})();
+}),
+"[project]/node_modules/next/dist/esm/server/api-utils/index.js [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "ApiError",
+    ()=>ApiError,
+    "COOKIE_NAME_PRERENDER_BYPASS",
+    ()=>COOKIE_NAME_PRERENDER_BYPASS,
+    "COOKIE_NAME_PRERENDER_DATA",
+    ()=>COOKIE_NAME_PRERENDER_DATA,
+    "RESPONSE_LIMIT_DEFAULT",
+    ()=>RESPONSE_LIMIT_DEFAULT,
+    "SYMBOL_CLEARED_COOKIES",
+    ()=>SYMBOL_CLEARED_COOKIES,
+    "SYMBOL_PREVIEW_DATA",
+    ()=>SYMBOL_PREVIEW_DATA,
+    "checkIsOnDemandRevalidate",
+    ()=>checkIsOnDemandRevalidate,
+    "clearPreviewData",
+    ()=>clearPreviewData,
+    "redirect",
+    ()=>redirect,
+    "sendError",
+    ()=>sendError,
+    "sendStatusCode",
+    ()=>sendStatusCode,
+    "setLazyProp",
+    ()=>setLazyProp,
+    "wrapApiHandler",
+    ()=>wrapApiHandler
+]);
+(()=>{
+    const e = new Error("Cannot find module '../web/spec-extension/adapters/headers'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$constants$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/lib/constants.js [app-route] (ecmascript)");
+(()=>{
+    const e = new Error("Cannot find module '../lib/trace/tracer'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+(()=>{
+    const e = new Error("Cannot find module '../lib/trace/constants'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+;
+;
+;
+;
+function wrapApiHandler(page, handler) {
+    return (...args)=>{
+        getTracer().setRootSpanAttribute('next.route', page);
+        // Call API route method
+        return getTracer().trace(NodeSpan.runHandler, {
+            spanName: `executing api route (pages) ${page}`
+        }, ()=>handler(...args));
+    };
+}
+function sendStatusCode(res, statusCode) {
+    res.statusCode = statusCode;
+    return res;
+}
+function redirect(res, statusOrUrl, url) {
+    if (typeof statusOrUrl === 'string') {
+        url = statusOrUrl;
+        statusOrUrl = 307;
+    }
+    if (typeof statusOrUrl !== 'number' || typeof url !== 'string') {
+        throw Object.defineProperty(new Error(`Invalid redirect arguments. Please use a single argument URL, e.g. res.redirect('/destination') or use a status code and URL, e.g. res.redirect(307, '/destination').`), "__NEXT_ERROR_CODE", {
+            value: "E389",
+            enumerable: false,
+            configurable: true
+        });
+    }
+    res.writeHead(statusOrUrl, {
+        Location: url
+    });
+    res.write(url);
+    res.end();
+    return res;
+}
+function checkIsOnDemandRevalidate(req, previewProps) {
+    const headers = HeadersAdapter.from(req.headers);
+    const previewModeId = headers.get(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$constants$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["PRERENDER_REVALIDATE_HEADER"]);
+    const isOnDemandRevalidate = previewModeId === previewProps.previewModeId;
+    const revalidateOnlyGenerated = headers.has(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$constants$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["PRERENDER_REVALIDATE_ONLY_GENERATED_HEADER"]);
+    return {
+        isOnDemandRevalidate,
+        revalidateOnlyGenerated
+    };
+}
+const COOKIE_NAME_PRERENDER_BYPASS = `__prerender_bypass`;
+const COOKIE_NAME_PRERENDER_DATA = `__next_preview_data`;
+const RESPONSE_LIMIT_DEFAULT = 4 * 1024 * 1024;
+const SYMBOL_PREVIEW_DATA = Symbol(COOKIE_NAME_PRERENDER_DATA);
+const SYMBOL_CLEARED_COOKIES = Symbol(COOKIE_NAME_PRERENDER_BYPASS);
+function clearPreviewData(res, options = {}) {
+    if (SYMBOL_CLEARED_COOKIES in res) {
+        return res;
+    }
+    const { serialize } = __turbopack_context__.r("[project]/node_modules/next/dist/compiled/cookie/index.js [app-route] (ecmascript)");
+    const previous = res.getHeader('Set-Cookie');
+    res.setHeader(`Set-Cookie`, [
+        ...typeof previous === 'string' ? [
+            previous
+        ] : Array.isArray(previous) ? previous : [],
+        serialize(COOKIE_NAME_PRERENDER_BYPASS, '', {
+            // To delete a cookie, set `expires` to a date in the past:
+            // https://tools.ietf.org/html/rfc6265#section-4.1.1
+            // `Max-Age: 0` is not valid, thus ignored, and the cookie is persisted.
+            expires: new Date(0),
+            httpOnly: true,
+            sameSite: ("TURBOPACK compile-time falsy", 0) ? "TURBOPACK unreachable" : 'lax',
+            secure: ("TURBOPACK compile-time value", "development") !== 'development',
+            path: '/',
+            ...options.path !== undefined ? {
+                path: options.path
+            } : undefined
+        }),
+        serialize(COOKIE_NAME_PRERENDER_DATA, '', {
+            // To delete a cookie, set `expires` to a date in the past:
+            // https://tools.ietf.org/html/rfc6265#section-4.1.1
+            // `Max-Age: 0` is not valid, thus ignored, and the cookie is persisted.
+            expires: new Date(0),
+            httpOnly: true,
+            sameSite: ("TURBOPACK compile-time falsy", 0) ? "TURBOPACK unreachable" : 'lax',
+            secure: ("TURBOPACK compile-time value", "development") !== 'development',
+            path: '/',
+            ...options.path !== undefined ? {
+                path: options.path
+            } : undefined
+        })
+    ]);
+    Object.defineProperty(res, SYMBOL_CLEARED_COOKIES, {
+        value: true,
+        enumerable: false
+    });
+    return res;
+}
+class ApiError extends Error {
+    constructor(statusCode, message){
+        super(message);
+        this.statusCode = statusCode;
+    }
+}
+function sendError(res, statusCode, message) {
+    res.statusCode = statusCode;
+    res.statusMessage = message;
+    res.end(message);
+}
+function setLazyProp({ req }, prop, getter) {
+    const opts = {
+        configurable: true,
+        enumerable: true
+    };
+    const optsReset = {
+        ...opts,
+        writable: true
+    };
+    Object.defineProperty(req, prop, {
+        ...opts,
+        get: ()=>{
+            const value = getter();
+            // we set the property on the object to avoid recalculating it
+            Object.defineProperty(req, prop, {
+                ...optsReset,
+                value
+            });
+            return value;
+        },
+        set: (value)=>{
+            Object.defineProperty(req, prop, {
+                ...optsReset,
+                value
+            });
+        }
+    });
+}
+}),
+"[project]/node_modules/next/dist/esm/client/components/redirect-status-code.js [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "RedirectStatusCode",
+    ()=>RedirectStatusCode
+]);
+var RedirectStatusCode = /*#__PURE__*/ function(RedirectStatusCode) {
+    RedirectStatusCode[RedirectStatusCode["SeeOther"] = 303] = "SeeOther";
+    RedirectStatusCode[RedirectStatusCode["TemporaryRedirect"] = 307] = "TemporaryRedirect";
+    RedirectStatusCode[RedirectStatusCode["PermanentRedirect"] = 308] = "PermanentRedirect";
+    return RedirectStatusCode;
+}({});
+}),
+"[project]/node_modules/next/dist/esm/server/api-utils/get-cookie-parser.js [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+/**
+ * Parse cookies from the `headers` of request
+ * @param req request object
+ */ __turbopack_context__.s([
+    "getCookieParser",
+    ()=>getCookieParser
+]);
+function getCookieParser(headers) {
+    return function parseCookie() {
+        const { cookie } = headers;
+        if (!cookie) {
+            return {};
+        }
+        const { parse: parseCookieFn } = __turbopack_context__.r("[project]/node_modules/next/dist/compiled/cookie/index.js [app-route] (ecmascript)");
+        return parseCookieFn(Array.isArray(cookie) ? cookie.join('; ') : cookie);
+    };
+}
+}),
+"[project]/node_modules/next/dist/esm/server/base-http/index.js [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "BaseNextRequest",
+    ()=>BaseNextRequest,
+    "BaseNextResponse",
+    ()=>BaseNextResponse
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$client$2f$components$2f$redirect$2d$status$2d$code$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/client/components/redirect-status-code.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$api$2d$utils$2f$get$2d$cookie$2d$parser$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/server/api-utils/get-cookie-parser.js [app-route] (ecmascript)");
+;
+;
+class BaseNextRequest {
+    constructor(method, url, body){
+        this.method = method;
+        this.url = url;
+        this.body = body;
+    }
+    // Utils implemented using the abstract methods above
+    get cookies() {
+        if (this._cookies) return this._cookies;
+        return this._cookies = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$api$2d$utils$2f$get$2d$cookie$2d$parser$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getCookieParser"])(this.headers)();
+    }
+}
+class BaseNextResponse {
+    constructor(destination){
+        this.destination = destination;
+    }
+    // Utils implemented using the abstract methods above
+    redirect(destination, statusCode) {
+        this.setHeader('Location', destination);
+        this.statusCode = statusCode;
+        // Since IE11 doesn't support the 308 header add backwards
+        // compatibility using refresh header
+        if (statusCode === __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$client$2f$components$2f$redirect$2d$status$2d$code$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["RedirectStatusCode"].PermanentRedirect) {
+            this.setHeader('Refresh', `0;url=${destination}`);
+        }
+        return this;
+    }
+}
+}),
+"[project]/node_modules/next/dist/esm/server/base-http/node.js [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "NodeNextRequest",
+    ()=>NodeNextRequest,
+    "NodeNextResponse",
+    ()=>NodeNextResponse
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$api$2d$utils$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/server/api-utils/index.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$request$2d$meta$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/server/request-meta.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$base$2d$http$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/server/base-http/index.js [app-route] (ecmascript)");
+;
+;
+;
+let prop;
+class NodeNextRequest extends __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$base$2d$http$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["BaseNextRequest"] {
+    static #_ = prop = _NEXT_REQUEST_META = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$request$2d$meta$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NEXT_REQUEST_META"];
+    constructor(_req){
+        var _this__req;
+        super(_req.method.toUpperCase(), _req.url, _req), this._req = _req, this.headers = this._req.headers, this.fetchMetrics = (_this__req = this._req) == null ? void 0 : _this__req.fetchMetrics, this[_NEXT_REQUEST_META] = this._req[__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$request$2d$meta$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NEXT_REQUEST_META"]] || {}, this.streaming = false;
+    }
+    get originalRequest() {
+        // Need to mimic these changes to the original req object for places where we use it:
+        // render.tsx, api/ssg requests
+        this._req[__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$request$2d$meta$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NEXT_REQUEST_META"]] = this[__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$request$2d$meta$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NEXT_REQUEST_META"]];
+        this._req.url = this.url;
+        this._req.cookies = this.cookies;
+        return this._req;
+    }
+    set originalRequest(value) {
+        this._req = value;
+    }
+    /**
+   * Returns the request body as a Web Readable Stream. The body here can only
+   * be read once as the body will start flowing as soon as the data handler
+   * is attached.
+   *
+   * @internal
+   */ stream() {
+        if (this.streaming) {
+            throw Object.defineProperty(new Error('Invariant: NodeNextRequest.stream() can only be called once'), "__NEXT_ERROR_CODE", {
+                value: "E467",
+                enumerable: false,
+                configurable: true
+            });
+        }
+        this.streaming = true;
+        return new ReadableStream({
+            start: (controller)=>{
+                this._req.on('data', (chunk)=>{
+                    controller.enqueue(new Uint8Array(chunk));
+                });
+                this._req.on('end', ()=>{
+                    controller.close();
+                });
+                this._req.on('error', (err)=>{
+                    controller.error(err);
+                });
+            }
+        });
+    }
+}
+class NodeNextResponse extends __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$base$2d$http$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["BaseNextResponse"] {
+    get originalResponse() {
+        if (__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$api$2d$utils$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["SYMBOL_CLEARED_COOKIES"] in this) {
+            this._res[__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$api$2d$utils$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["SYMBOL_CLEARED_COOKIES"]] = this[__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$api$2d$utils$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["SYMBOL_CLEARED_COOKIES"]];
+        }
+        return this._res;
+    }
+    constructor(_res){
+        super(_res), this._res = _res, this.textBody = undefined;
+    }
+    get sent() {
+        return this._res.finished || this._res.headersSent;
+    }
+    get statusCode() {
+        return this._res.statusCode;
+    }
+    set statusCode(value) {
+        this._res.statusCode = value;
+    }
+    get statusMessage() {
+        return this._res.statusMessage;
+    }
+    set statusMessage(value) {
+        this._res.statusMessage = value;
+    }
+    setHeader(name, value) {
+        this._res.setHeader(name, value);
+        return this;
+    }
+    removeHeader(name) {
+        this._res.removeHeader(name);
+        return this;
+    }
+    getHeaderValues(name) {
+        const values = this._res.getHeader(name);
+        if (values === undefined) return undefined;
+        return (Array.isArray(values) ? values : [
+            values
+        ]).map((value)=>value.toString());
+    }
+    hasHeader(name) {
+        return this._res.hasHeader(name);
+    }
+    getHeader(name) {
+        const values = this.getHeaderValues(name);
+        return Array.isArray(values) ? values.join(',') : undefined;
+    }
+    getHeaders() {
+        return this._res.getHeaders();
+    }
+    appendHeader(name, value) {
+        const currentValues = this.getHeaderValues(name) ?? [];
+        if (!currentValues.includes(value)) {
+            this._res.setHeader(name, [
+                ...currentValues,
+                value
+            ]);
+        }
+        return this;
+    }
+    body(value) {
+        this.textBody = value;
+        return this;
+    }
+    send() {
+        this._res.end(this.textBody);
+    }
+    onClose(callback) {
+        this.originalResponse.on('close', callback);
+    }
+}
+var _NEXT_REQUEST_META;
+}),
+"[project]/node_modules/next/dist/esm/lib/detached-promise.js [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+/**
+ * A `Promise.withResolvers` implementation that exposes the `resolve` and
+ * `reject` functions on a `Promise`.
+ *
+ * @see https://tc39.es/proposal-promise-with-resolvers/
+ */ __turbopack_context__.s([
+    "DetachedPromise",
+    ()=>DetachedPromise
+]);
+class DetachedPromise {
+    constructor(){
+        let resolve;
+        let reject;
+        // Create the promise and assign the resolvers to the object.
+        this.promise = new Promise((res, rej)=>{
+            resolve = res;
+            reject = rej;
+        });
+        // We know that resolvers is defined because the Promise constructor runs
+        // synchronously.
+        this.resolve = resolve;
+        this.reject = reject;
+    }
+}
+}),
+"[project]/node_modules/next/dist/esm/lib/batcher.js [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "Batcher",
+    ()=>Batcher
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$detached$2d$promise$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/lib/detached-promise.js [app-route] (ecmascript)");
+;
+class Batcher {
+    constructor(cacheKeyFn, /**
+     * A function that will be called to schedule the wrapped function to be
+     * executed. This defaults to a function that will execute the function
+     * immediately.
+     */ schedulerFn = (fn)=>fn()){
+        this.cacheKeyFn = cacheKeyFn;
+        this.schedulerFn = schedulerFn;
+        this.pending = new Map();
+    }
+    static create(options) {
+        return new Batcher(options == null ? void 0 : options.cacheKeyFn, options == null ? void 0 : options.schedulerFn);
+    }
+    /**
+   * Wraps a function in a promise that will be resolved or rejected only once
+   * for a given key. This will allow multiple calls to the function to be
+   * made, but only one will be executed at a time. The result of the first
+   * call will be returned to all callers.
+   *
+   * @param key the key to use for the cache
+   * @param fn the function to wrap
+   * @returns a promise that resolves to the result of the function
+   */ async batch(key, fn) {
+        const cacheKey = this.cacheKeyFn ? await this.cacheKeyFn(key) : key;
+        if (cacheKey === null) {
+            return fn({
+                resolve: (value)=>Promise.resolve(value),
+                key
+            });
+        }
+        const pending = this.pending.get(cacheKey);
+        if (pending) return pending;
+        const { promise, resolve, reject } = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$detached$2d$promise$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["DetachedPromise"]();
+        this.pending.set(cacheKey, promise);
+        this.schedulerFn(async ()=>{
+            try {
+                const result = await fn({
+                    resolve,
+                    key
+                });
+                // Resolving a promise multiple times is a no-op, so we can safely
+                // resolve all pending promises with the same result.
+                resolve(result);
+            } catch (err) {
+                reject(err);
+            } finally{
+                this.pending.delete(cacheKey);
+            }
+        });
+        return promise;
+    }
+}
+}),
+"[project]/node_modules/next/dist/esm/lib/picocolors.js [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "bgBlack",
+    ()=>bgBlack,
+    "bgBlue",
+    ()=>bgBlue,
+    "bgCyan",
+    ()=>bgCyan,
+    "bgGreen",
+    ()=>bgGreen,
+    "bgMagenta",
+    ()=>bgMagenta,
+    "bgRed",
+    ()=>bgRed,
+    "bgWhite",
+    ()=>bgWhite,
+    "bgYellow",
+    ()=>bgYellow,
+    "black",
+    ()=>black,
+    "blue",
+    ()=>blue,
+    "bold",
+    ()=>bold,
+    "cyan",
+    ()=>cyan,
+    "dim",
+    ()=>dim,
+    "gray",
+    ()=>gray,
+    "green",
+    ()=>green,
+    "hidden",
+    ()=>hidden,
+    "inverse",
+    ()=>inverse,
+    "italic",
+    ()=>italic,
+    "magenta",
+    ()=>magenta,
+    "purple",
+    ()=>purple,
+    "red",
+    ()=>red,
+    "reset",
+    ()=>reset,
+    "strikethrough",
+    ()=>strikethrough,
+    "underline",
+    ()=>underline,
+    "white",
+    ()=>white,
+    "yellow",
+    ()=>yellow
+]);
+// ISC License
+// Copyright (c) 2021 Alexey Raspopov, Kostiantyn Denysov, Anton Verinov
+// Permission to use, copy, modify, and/or distribute this software for any
+// purpose with or without fee is hereby granted, provided that the above
+// copyright notice and this permission notice appear in all copies.
+// THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+// WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+// MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+// ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+// WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+// ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+// OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+//
+// https://github.com/alexeyraspopov/picocolors/blob/b6261487e7b81aaab2440e397a356732cad9e342/picocolors.js#L1
+var _globalThis;
+const { env, stdout } = ((_globalThis = globalThis) == null ? void 0 : _globalThis.process) ?? {};
+const enabled = env && !env.NO_COLOR && (env.FORCE_COLOR || (stdout == null ? void 0 : stdout.isTTY) && !env.CI && env.TERM !== 'dumb');
+const replaceClose = (str, close, replace, index)=>{
+    const start = str.substring(0, index) + replace;
+    const end = str.substring(index + close.length);
+    const nextIndex = end.indexOf(close);
+    return ~nextIndex ? start + replaceClose(end, close, replace, nextIndex) : start + end;
+};
+const formatter = (open, close, replace = open)=>{
+    if (!enabled) return String;
+    return (input)=>{
+        const string = '' + input;
+        const index = string.indexOf(close, open.length);
+        return ~index ? open + replaceClose(string, close, replace, index) + close : open + string + close;
+    };
+};
+const reset = enabled ? (s)=>`\x1b[0m${s}\x1b[0m` : String;
+const bold = formatter('\x1b[1m', '\x1b[22m', '\x1b[22m\x1b[1m');
+const dim = formatter('\x1b[2m', '\x1b[22m', '\x1b[22m\x1b[2m');
+const italic = formatter('\x1b[3m', '\x1b[23m');
+const underline = formatter('\x1b[4m', '\x1b[24m');
+const inverse = formatter('\x1b[7m', '\x1b[27m');
+const hidden = formatter('\x1b[8m', '\x1b[28m');
+const strikethrough = formatter('\x1b[9m', '\x1b[29m');
+const black = formatter('\x1b[30m', '\x1b[39m');
+const red = formatter('\x1b[31m', '\x1b[39m');
+const green = formatter('\x1b[32m', '\x1b[39m');
+const yellow = formatter('\x1b[33m', '\x1b[39m');
+const blue = formatter('\x1b[34m', '\x1b[39m');
+const magenta = formatter('\x1b[35m', '\x1b[39m');
+const purple = formatter('\x1b[38;2;173;127;168m', '\x1b[39m');
+const cyan = formatter('\x1b[36m', '\x1b[39m');
+const white = formatter('\x1b[37m', '\x1b[39m');
+const gray = formatter('\x1b[90m', '\x1b[39m');
+const bgBlack = formatter('\x1b[40m', '\x1b[49m');
+const bgRed = formatter('\x1b[41m', '\x1b[49m');
+const bgGreen = formatter('\x1b[42m', '\x1b[49m');
+const bgYellow = formatter('\x1b[43m', '\x1b[49m');
+const bgBlue = formatter('\x1b[44m', '\x1b[49m');
+const bgMagenta = formatter('\x1b[45m', '\x1b[49m');
+const bgCyan = formatter('\x1b[46m', '\x1b[49m');
+const bgWhite = formatter('\x1b[47m', '\x1b[49m');
+}),
+"[project]/node_modules/next/dist/esm/build/output/log.js [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "bootstrap",
+    ()=>bootstrap,
+    "error",
+    ()=>error,
+    "errorOnce",
+    ()=>errorOnce,
+    "event",
+    ()=>event,
+    "info",
+    ()=>info,
+    "prefixes",
+    ()=>prefixes,
+    "ready",
+    ()=>ready,
+    "trace",
+    ()=>trace,
+    "wait",
+    ()=>wait,
+    "warn",
+    ()=>warn,
+    "warnOnce",
+    ()=>warnOnce
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$picocolors$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/lib/picocolors.js [app-route] (ecmascript)");
+(()=>{
+    const e = new Error("Cannot find module '../../server/lib/lru-cache'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+;
+;
+const prefixes = {
+    wait: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$picocolors$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["white"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$picocolors$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["bold"])('○')),
+    error: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$picocolors$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["red"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$picocolors$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["bold"])('⨯')),
+    warn: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$picocolors$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["yellow"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$picocolors$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["bold"])('⚠')),
+    ready: '▲',
+    info: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$picocolors$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["white"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$picocolors$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["bold"])(' ')),
+    event: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$picocolors$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["green"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$picocolors$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["bold"])('✓')),
+    trace: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$picocolors$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["magenta"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$picocolors$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["bold"])('»'))
+};
+const LOGGING_METHOD = {
+    log: 'log',
+    warn: 'warn',
+    error: 'error'
+};
+function prefixedLog(prefixType, ...message) {
+    if ((message[0] === '' || message[0] === undefined) && message.length === 1) {
+        message.shift();
+    }
+    const consoleMethod = prefixType in LOGGING_METHOD ? LOGGING_METHOD[prefixType] : 'log';
+    const prefix = prefixes[prefixType];
+    // If there's no message, don't print the prefix but a new line
+    if (message.length === 0) {
+        console[consoleMethod]('');
+    } else {
+        // Ensure if there's ANSI escape codes it's concatenated into one string.
+        // Chrome DevTool can only handle color if it's in one string.
+        if (message.length === 1 && typeof message[0] === 'string') {
+            console[consoleMethod](prefix + ' ' + message[0]);
+        } else {
+            console[consoleMethod](prefix, ...message);
+        }
+    }
+}
+function bootstrap(message) {
+    console.log(message);
+}
+function wait(...message) {
+    prefixedLog('wait', ...message);
+}
+function error(...message) {
+    prefixedLog('error', ...message);
+}
+function warn(...message) {
+    prefixedLog('warn', ...message);
+}
+function ready(...message) {
+    prefixedLog('ready', ...message);
+}
+function info(...message) {
+    prefixedLog('info', ...message);
+}
+function event(...message) {
+    prefixedLog('event', ...message);
+}
+function trace(...message) {
+    prefixedLog('trace', ...message);
+}
+const warnOnceCache = new LRUCache(10000, (value)=>value.length);
+function warnOnce(...message) {
+    const key = message.join(' ');
+    if (!warnOnceCache.has(key)) {
+        warnOnceCache.set(key, key);
+        warn(...message);
+    }
+}
+const errorOnceCache = new LRUCache(10000, (value)=>value.length);
+function errorOnce(...message) {
+    const key = message.join(' ');
+    if (!errorOnceCache.has(key)) {
+        errorOnceCache.set(key, key);
+        error(...message);
+    }
+}
+}),
+"[project]/node_modules/next/dist/esm/lib/scheduler.js [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+/**
+ * Schedules a function to be called on the next tick after the other promises
+ * have been resolved.
+ *
+ * @param cb the function to schedule
+ */ __turbopack_context__.s([
+    "atLeastOneTask",
+    ()=>atLeastOneTask,
+    "scheduleImmediate",
+    ()=>scheduleImmediate,
+    "scheduleOnNextTick",
+    ()=>scheduleOnNextTick,
+    "waitAtLeastOneReactRenderTask",
+    ()=>waitAtLeastOneReactRenderTask
+]);
+const scheduleOnNextTick = (cb)=>{
+    // We use Promise.resolve().then() here so that the operation is scheduled at
+    // the end of the promise job queue, we then add it to the next process tick
+    // to ensure it's evaluated afterwards.
+    //
+    // This was inspired by the implementation of the DataLoader interface: https://github.com/graphql/dataloader/blob/d336bd15282664e0be4b4a657cb796f09bafbc6b/src/index.js#L213-L255
+    //
+    Promise.resolve().then(()=>{
+        if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+        ;
+        else {
+            process.nextTick(cb);
+        }
+    });
+};
+const scheduleImmediate = (cb)=>{
+    if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+    ;
+    else {
+        setImmediate(cb);
+    }
+};
+function atLeastOneTask() {
+    return new Promise((resolve)=>scheduleImmediate(resolve));
+}
+function waitAtLeastOneReactRenderTask() {
+    if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+    ;
+    else {
+        return new Promise((r)=>setImmediate(r));
+    }
+}
+}),
+"[project]/node_modules/next/dist/esm/server/response-cache/types.js [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "CachedRouteKind",
+    ()=>CachedRouteKind,
+    "IncrementalCacheKind",
+    ()=>IncrementalCacheKind
+]);
+var CachedRouteKind = /*#__PURE__*/ function(CachedRouteKind) {
+    CachedRouteKind["APP_PAGE"] = "APP_PAGE";
+    CachedRouteKind["APP_ROUTE"] = "APP_ROUTE";
+    CachedRouteKind["PAGES"] = "PAGES";
+    CachedRouteKind["FETCH"] = "FETCH";
+    CachedRouteKind["REDIRECT"] = "REDIRECT";
+    CachedRouteKind["IMAGE"] = "IMAGE";
+    return CachedRouteKind;
+}({});
+var IncrementalCacheKind = /*#__PURE__*/ function(IncrementalCacheKind) {
+    IncrementalCacheKind["APP_PAGE"] = "APP_PAGE";
+    IncrementalCacheKind["APP_ROUTE"] = "APP_ROUTE";
+    IncrementalCacheKind["PAGES"] = "PAGES";
+    IncrementalCacheKind["FETCH"] = "FETCH";
+    IncrementalCacheKind["IMAGE"] = "IMAGE";
+    return IncrementalCacheKind;
+}({});
+}),
+"[project]/node_modules/next/dist/esm/server/pipe-readable.js [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "isAbortError",
+    ()=>isAbortError,
+    "pipeToNodeResponse",
+    ()=>pipeToNodeResponse
+]);
+(()=>{
+    const e = new Error("Cannot find module './web/spec-extension/adapters/next-request'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$detached$2d$promise$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/lib/detached-promise.js [app-route] (ecmascript)");
+(()=>{
+    const e = new Error("Cannot find module './lib/trace/tracer'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+(()=>{
+    const e = new Error("Cannot find module './lib/trace/constants'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+(()=>{
+    const e = new Error("Cannot find module './client-component-renderer-logger'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+;
+;
+;
+;
+;
+function isAbortError(e) {
+    return (e == null ? void 0 : e.name) === 'AbortError' || (e == null ? void 0 : e.name) === ResponseAbortedName;
+}
+function createWriterFromResponse(res, waitUntilForEnd) {
+    let started = false;
+    // Create a promise that will resolve once the response has drained. See
+    // https://nodejs.org/api/stream.html#stream_event_drain
+    let drained = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$detached$2d$promise$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["DetachedPromise"]();
+    function onDrain() {
+        drained.resolve();
+    }
+    res.on('drain', onDrain);
+    // If the finish event fires, it means we shouldn't block and wait for the
+    // drain event.
+    res.once('close', ()=>{
+        res.off('drain', onDrain);
+        drained.resolve();
+    });
+    // Create a promise that will resolve once the response has finished. See
+    // https://nodejs.org/api/http.html#event-finish_1
+    const finished = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$detached$2d$promise$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["DetachedPromise"]();
+    res.once('finish', ()=>{
+        finished.resolve();
+    });
+    // Create a writable stream that will write to the response.
+    return new WritableStream({
+        write: async (chunk)=>{
+            // You'd think we'd want to use `start` instead of placing this in `write`
+            // but this ensures that we don't actually flush the headers until we've
+            // started writing chunks.
+            if (!started) {
+                started = true;
+                if ('performance' in globalThis && process.env.NEXT_OTEL_PERFORMANCE_PREFIX) {
+                    const metrics = getClientComponentLoaderMetrics();
+                    if (metrics) {
+                        performance.measure(`${process.env.NEXT_OTEL_PERFORMANCE_PREFIX}:next-client-component-loading`, {
+                            start: metrics.clientComponentLoadStart,
+                            end: metrics.clientComponentLoadStart + metrics.clientComponentLoadTimes
+                        });
+                    }
+                }
+                res.flushHeaders();
+                getTracer().trace(NextNodeServerSpan.startResponse, {
+                    spanName: 'start response'
+                }, ()=>undefined);
+            }
+            try {
+                const ok = res.write(chunk);
+                // Added by the `compression` middleware, this is a function that will
+                // flush the partially-compressed response to the client.
+                if ('flush' in res && typeof res.flush === 'function') {
+                    res.flush();
+                }
+                // If the write returns false, it means there's some backpressure, so
+                // wait until it's streamed before continuing.
+                if (!ok) {
+                    await drained.promise;
+                    // Reset the drained promise so that we can wait for the next drain event.
+                    drained = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$detached$2d$promise$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["DetachedPromise"]();
+                }
+            } catch (err) {
+                res.end();
+                throw Object.defineProperty(new Error('failed to write chunk to response', {
+                    cause: err
+                }), "__NEXT_ERROR_CODE", {
+                    value: "E321",
+                    enumerable: false,
+                    configurable: true
+                });
+            }
+        },
+        abort: (err)=>{
+            if (res.writableFinished) return;
+            res.destroy(err);
+        },
+        close: async ()=>{
+            // if a waitUntil promise was passed, wait for it to resolve before
+            // ending the response.
+            if (waitUntilForEnd) {
+                await waitUntilForEnd;
+            }
+            if (res.writableFinished) return;
+            res.end();
+            return finished.promise;
+        }
+    });
+}
+async function pipeToNodeResponse(readable, res, waitUntilForEnd) {
+    try {
+        // If the response has already errored, then just return now.
+        const { errored, destroyed } = res;
+        if (errored || destroyed) return;
+        // Create a new AbortController so that we can abort the readable if the
+        // client disconnects.
+        const controller = createAbortController(res);
+        const writer = createWriterFromResponse(res, waitUntilForEnd);
+        await readable.pipeTo(writer, {
+            signal: controller.signal
+        });
+    } catch (err) {
+        // If this isn't related to an abort error, re-throw it.
+        if (isAbortError(err)) return;
+        throw Object.defineProperty(new Error('failed to pipe response', {
+            cause: err
+        }), "__NEXT_ERROR_CODE", {
+            value: "E180",
+            enumerable: false,
+            configurable: true
+        });
+    }
+}
+}),
+"[project]/node_modules/next/dist/esm/shared/lib/invariant-error.js [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "InvariantError",
+    ()=>InvariantError
+]);
+class InvariantError extends Error {
+    constructor(message, options){
+        super(`Invariant: ${message.endsWith('.') ? message : message + '.'} This is a bug in Next.js.`, options);
+        this.name = 'InvariantError';
+    }
+}
+}),
+"[project]/node_modules/next/dist/esm/server/render-result.js [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "default",
+    ()=>RenderResult
+]);
+(()=>{
+    const e = new Error("Cannot find module './stream-utils/node-web-streams-helper'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$pipe$2d$readable$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/server/pipe-readable.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$shared$2f$lib$2f$invariant$2d$error$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/shared/lib/invariant-error.js [app-route] (ecmascript)");
+;
+;
+;
+class RenderResult {
+    static #_ = /**
+   * A render result that represents an empty response. This is used to
+   * represent a response that was not found or was already sent.
+   */ this.EMPTY = new RenderResult(null, {
+        metadata: {},
+        contentType: null
+    });
+    /**
+   * Creates a new RenderResult instance from a static response.
+   *
+   * @param value the static response value
+   * @param contentType the content type of the response
+   * @returns a new RenderResult instance
+   */ static fromStatic(value, contentType) {
+        return new RenderResult(value, {
+            metadata: {},
+            contentType
+        });
+    }
+    constructor(response, { contentType, waitUntil, metadata }){
+        this.response = response;
+        this.contentType = contentType;
+        this.metadata = metadata;
+        this.waitUntil = waitUntil;
+    }
+    assignMetadata(metadata) {
+        Object.assign(this.metadata, metadata);
+    }
+    /**
+   * Returns true if the response is null. It can be null if the response was
+   * not found or was already sent.
+   */ get isNull() {
+        return this.response === null;
+    }
+    /**
+   * Returns false if the response is a string. It can be a string if the page
+   * was prerendered. If it's not, then it was generated dynamically.
+   */ get isDynamic() {
+        return typeof this.response !== 'string';
+    }
+    toUnchunkedString(stream = false) {
+        if (this.response === null) {
+            // If the response is null, return an empty string. This behavior is
+            // intentional as we're now providing the `RenderResult.EMPTY` value.
+            return '';
+        }
+        if (typeof this.response !== 'string') {
+            if (!stream) {
+                throw Object.defineProperty(new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$shared$2f$lib$2f$invariant$2d$error$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["InvariantError"]('dynamic responses cannot be unchunked. This is a bug in Next.js'), "__NEXT_ERROR_CODE", {
+                    value: "E732",
+                    enumerable: false,
+                    configurable: true
+                });
+            }
+            return streamToString(this.readable);
+        }
+        return this.response;
+    }
+    /**
+   * Returns a readable stream of the response.
+   */ get readable() {
+        if (this.response === null) {
+            // If the response is null, return an empty stream. This behavior is
+            // intentional as we're now providing the `RenderResult.EMPTY` value.
+            return new ReadableStream({
+                start (controller) {
+                    controller.close();
+                }
+            });
+        }
+        if (typeof this.response === 'string') {
+            return streamFromString(this.response);
+        }
+        if (Buffer.isBuffer(this.response)) {
+            return streamFromBuffer(this.response);
+        }
+        // If the response is an array of streams, then chain them together.
+        if (Array.isArray(this.response)) {
+            return chainStreams(...this.response);
+        }
+        return this.response;
+    }
+    /**
+   * Coerces the response to an array of streams. This will convert the response
+   * to an array of streams if it is not already one.
+   *
+   * @returns An array of streams
+   */ coerce() {
+        if (this.response === null) {
+            // If the response is null, return an empty stream. This behavior is
+            // intentional as we're now providing the `RenderResult.EMPTY` value.
+            return [];
+        }
+        if (typeof this.response === 'string') {
+            return [
+                streamFromString(this.response)
+            ];
+        } else if (Array.isArray(this.response)) {
+            return this.response;
+        } else if (Buffer.isBuffer(this.response)) {
+            return [
+                streamFromBuffer(this.response)
+            ];
+        } else {
+            return [
+                this.response
+            ];
+        }
+    }
+    /**
+   * Pipes the response through a transform stream. This converts the response
+   * to a single readable stream (chaining if needed) and pipes it through the
+   * provided transform.
+   *
+   * @param transform The transform stream to pipe through
+   */ pipeThrough(transform) {
+        this.response = this.readable.pipeThrough(transform);
+    }
+    /**
+   * Unshifts a new stream to the response. This will convert the response to an
+   * array of streams if it is not already one and will add the new stream to
+   * the start of the array. When this response is piped, all of the streams
+   * will be piped one after the other.
+   *
+   * @param readable The new stream to unshift
+   */ unshift(readable) {
+        // Coerce the response to an array of streams.
+        this.response = this.coerce();
+        // Add the new stream to the start of the array.
+        this.response.unshift(readable);
+    }
+    /**
+   * Chains a new stream to the response. This will convert the response to an
+   * array of streams if it is not already one and will add the new stream to
+   * the end. When this response is piped, all of the streams will be piped
+   * one after the other.
+   *
+   * @param readable The new stream to chain
+   */ push(readable) {
+        // Coerce the response to an array of streams.
+        this.response = this.coerce();
+        // Add the new stream to the end of the array.
+        this.response.push(readable);
+    }
+    /**
+   * Pipes the response to a writable stream. This will close/cancel the
+   * writable stream if an error is encountered. If this doesn't throw, then
+   * the writable stream will be closed or aborted.
+   *
+   * @param writable Writable stream to pipe the response to
+   */ async pipeTo(writable) {
+        try {
+            await this.readable.pipeTo(writable, {
+                // We want to close the writable stream ourselves so that we can wait
+                // for the waitUntil promise to resolve before closing it. If an error
+                // is encountered, we'll abort the writable stream if we swallowed the
+                // error.
+                preventClose: true
+            });
+            // If there is a waitUntil promise, wait for it to resolve before
+            // closing the writable stream.
+            if (this.waitUntil) await this.waitUntil;
+            // Close the writable stream.
+            await writable.close();
+        } catch (err) {
+            // If this is an abort error, we should abort the writable stream (as we
+            // took ownership of it when we started piping). We don't need to re-throw
+            // because we handled the error.
+            if ((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$pipe$2d$readable$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["isAbortError"])(err)) {
+                // Abort the writable stream if an error is encountered.
+                await writable.abort(err);
+                return;
+            }
+            // We're not aborting the writer here as when this method throws it's not
+            // clear as to how so the caller should assume it's their responsibility
+            // to clean up the writer.
+            throw err;
+        }
+    }
+    /**
+   * Pipes the response to a node response. This will close/cancel the node
+   * response if an error is encountered.
+   *
+   * @param res
+   */ async pipeToNodeResponse(res) {
+        await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$pipe$2d$readable$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["pipeToNodeResponse"])(this.readable, res, this.waitUntil);
+    }
+}
+}),
+"[project]/node_modules/next/dist/esm/server/response-cache/utils.js [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "fromResponseCacheEntry",
+    ()=>fromResponseCacheEntry,
+    "routeKindToIncrementalCacheKind",
+    ()=>routeKindToIncrementalCacheKind,
+    "toResponseCacheEntry",
+    ()=>toResponseCacheEntry
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$types$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/server/response-cache/types.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$render$2d$result$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/server/render-result.js [app-route] (ecmascript)");
+(()=>{
+    const e = new Error("Cannot find module '../route-kind'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$constants$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/lib/constants.js [app-route] (ecmascript)");
+;
+;
+;
+;
+async function fromResponseCacheEntry(cacheEntry) {
+    var _cacheEntry_value, _cacheEntry_value1;
+    return {
+        ...cacheEntry,
+        value: ((_cacheEntry_value = cacheEntry.value) == null ? void 0 : _cacheEntry_value.kind) === __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$types$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["CachedRouteKind"].PAGES ? {
+            kind: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$types$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["CachedRouteKind"].PAGES,
+            html: await cacheEntry.value.html.toUnchunkedString(true),
+            pageData: cacheEntry.value.pageData,
+            headers: cacheEntry.value.headers,
+            status: cacheEntry.value.status
+        } : ((_cacheEntry_value1 = cacheEntry.value) == null ? void 0 : _cacheEntry_value1.kind) === __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$types$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["CachedRouteKind"].APP_PAGE ? {
+            kind: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$types$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["CachedRouteKind"].APP_PAGE,
+            html: await cacheEntry.value.html.toUnchunkedString(true),
+            postponed: cacheEntry.value.postponed,
+            rscData: cacheEntry.value.rscData,
+            headers: cacheEntry.value.headers,
+            status: cacheEntry.value.status,
+            segmentData: cacheEntry.value.segmentData
+        } : cacheEntry.value
+    };
+}
+async function toResponseCacheEntry(response) {
+    var _response_value, _response_value1;
+    if (!response) return null;
+    return {
+        isMiss: response.isMiss,
+        isStale: response.isStale,
+        cacheControl: response.cacheControl,
+        isFallback: response.isFallback,
+        value: ((_response_value = response.value) == null ? void 0 : _response_value.kind) === __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$types$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["CachedRouteKind"].PAGES ? {
+            kind: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$types$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["CachedRouteKind"].PAGES,
+            html: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$render$2d$result$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"].fromStatic(response.value.html, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$constants$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["HTML_CONTENT_TYPE_HEADER"]),
+            pageData: response.value.pageData,
+            headers: response.value.headers,
+            status: response.value.status
+        } : ((_response_value1 = response.value) == null ? void 0 : _response_value1.kind) === __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$types$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["CachedRouteKind"].APP_PAGE ? {
+            kind: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$types$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["CachedRouteKind"].APP_PAGE,
+            html: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$render$2d$result$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"].fromStatic(response.value.html, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$constants$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["HTML_CONTENT_TYPE_HEADER"]),
+            rscData: response.value.rscData,
+            headers: response.value.headers,
+            status: response.value.status,
+            postponed: response.value.postponed,
+            segmentData: response.value.segmentData
+        } : response.value
+    };
+}
+function routeKindToIncrementalCacheKind(routeKind) {
+    switch(routeKind){
+        case RouteKind.PAGES:
+            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$types$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["IncrementalCacheKind"].PAGES;
+        case RouteKind.APP_PAGE:
+            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$types$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["IncrementalCacheKind"].APP_PAGE;
+        case RouteKind.IMAGE:
+            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$types$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["IncrementalCacheKind"].IMAGE;
+        case RouteKind.APP_ROUTE:
+            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$types$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["IncrementalCacheKind"].APP_ROUTE;
+        case RouteKind.PAGES_API:
+            // Pages Router API routes are not cached in the incremental cache.
+            throw Object.defineProperty(new Error(`Unexpected route kind ${routeKind}`), "__NEXT_ERROR_CODE", {
+                value: "E64",
+                enumerable: false,
+                configurable: true
+            });
+        default:
+            return routeKind;
+    }
+}
+}),
+"[project]/node_modules/next/dist/esm/server/response-cache/index.js [app-route] (ecmascript) <locals>", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "default",
+    ()=>ResponseCache
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$batcher$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/lib/batcher.js [app-route] (ecmascript)");
+(()=>{
+    const e = new Error("Cannot find module '../lib/lru-cache'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$build$2f$output$2f$log$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/build/output/log.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$scheduler$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/lib/scheduler.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$utils$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/server/response-cache/utils.js [app-route] (ecmascript)");
+;
+;
+;
+;
+;
+/**
+ * Parses an environment variable as a positive integer, returning the fallback
+ * if the value is missing, not a number, or not positive.
+ */ function parsePositiveInt(envValue, fallback) {
+    if (!envValue) return fallback;
+    const parsed = parseInt(envValue, 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+/**
+ * Default TTL (in milliseconds) for minimal mode response cache entries.
+ * Used for cache hit validation as a fallback for providers that don't
+ * send the x-invocation-id header yet.
+ *
+ * 10 seconds chosen because:
+ * - Long enough to dedupe rapid successive requests (e.g., page + data)
+ * - Short enough to not serve stale data across unrelated requests
+ *
+ * Can be configured via `NEXT_PRIVATE_RESPONSE_CACHE_TTL` environment variable.
+ */ const DEFAULT_TTL_MS = parsePositiveInt(process.env.NEXT_PRIVATE_RESPONSE_CACHE_TTL, 10000);
+/**
+ * Default maximum number of entries in the response cache.
+ * Can be configured via `NEXT_PRIVATE_RESPONSE_CACHE_MAX_SIZE` environment variable.
+ */ const DEFAULT_MAX_SIZE = parsePositiveInt(process.env.NEXT_PRIVATE_RESPONSE_CACHE_MAX_SIZE, 150);
+/**
+ * Separator used in compound cache keys to join pathname and invocationID.
+ * Using null byte (\0) since it cannot appear in valid URL paths or UUIDs.
+ */ const KEY_SEPARATOR = '\0';
+/**
+ * Sentinel value used for TTL-based cache entries (when invocationID is undefined).
+ * Chosen to be a clearly reserved marker for internal cache keys.
+ */ const TTL_SENTINEL = '__ttl_sentinel__';
+/**
+ * Creates a compound cache key from pathname and invocationID.
+ */ function createCacheKey(pathname, invocationID) {
+    return `${pathname}${KEY_SEPARATOR}${invocationID ?? TTL_SENTINEL}`;
+}
+/**
+ * Extracts the invocationID from a compound cache key.
+ * Returns undefined if the key used TTL_SENTINEL.
+ */ function extractInvocationID(compoundKey) {
+    const separatorIndex = compoundKey.lastIndexOf(KEY_SEPARATOR);
+    if (separatorIndex === -1) return undefined;
+    const invocationID = compoundKey.slice(separatorIndex + 1);
+    return invocationID === TTL_SENTINEL ? undefined : invocationID;
+}
+;
+class ResponseCache {
+    constructor(minimal_mode, maxSize = DEFAULT_MAX_SIZE, ttl = DEFAULT_TTL_MS){
+        this.getBatcher = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$batcher$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["Batcher"].create({
+            // Ensure on-demand revalidate doesn't block normal requests, it should be
+            // safe to run an on-demand revalidate for the same key as a normal request.
+            cacheKeyFn: ({ key, isOnDemandRevalidate })=>`${key}-${isOnDemandRevalidate ? '1' : '0'}`,
+            // We wait to do any async work until after we've added our promise to
+            // `pendingResponses` to ensure that any any other calls will reuse the
+            // same promise until we've fully finished our work.
+            schedulerFn: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$scheduler$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["scheduleOnNextTick"]
+        });
+        this.revalidateBatcher = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$batcher$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["Batcher"].create({
+            // We wait to do any async work until after we've added our promise to
+            // `pendingResponses` to ensure that any any other calls will reuse the
+            // same promise until we've fully finished our work.
+            schedulerFn: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$scheduler$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["scheduleOnNextTick"]
+        });
+        /**
+   * Set of invocation IDs that have had cache entries evicted.
+   * Used to detect when the cache size may be too small.
+   * Bounded to prevent memory growth.
+   */ this.evictedInvocationIDs = new Set();
+        this.minimal_mode = minimal_mode;
+        this.maxSize = maxSize;
+        this.ttl = ttl;
+        // Create the LRU cache with eviction tracking
+        this.cache = new LRUCache(maxSize, undefined, (compoundKey)=>{
+            const invocationID = extractInvocationID(compoundKey);
+            if (invocationID) {
+                // Bound to 100 entries to prevent unbounded memory growth.
+                // FIFO eviction is acceptable here because:
+                // 1. Invocations are short-lived (single request lifecycle), so older
+                //    invocations are unlikely to still be active after 100 newer ones
+                // 2. This warning mechanism is best-effort for developer guidance—
+                //    missing occasional eviction warnings doesn't affect correctness
+                // 3. If a long-running invocation is somehow evicted and then has
+                //    another cache entry evicted, it will simply be re-added
+                if (this.evictedInvocationIDs.size >= 100) {
+                    const first = this.evictedInvocationIDs.values().next().value;
+                    if (first) this.evictedInvocationIDs.delete(first);
+                }
+                this.evictedInvocationIDs.add(invocationID);
+            }
+        });
+    }
+    /**
+   * Gets the response cache entry for the given key.
+   *
+   * @param key - The key to get the response cache entry for.
+   * @param responseGenerator - The response generator to use to generate the response cache entry.
+   * @param context - The context for the get request.
+   * @returns The response cache entry.
+   */ async get(key, responseGenerator, context) {
+        // If there is no key for the cache, we can't possibly look this up in the
+        // cache so just return the result of the response generator.
+        if (!key) {
+            return responseGenerator({
+                hasResolved: false,
+                previousCacheEntry: null
+            });
+        }
+        // Check minimal mode cache before doing any other work.
+        if (this.minimal_mode) {
+            const cacheKey = createCacheKey(key, context.invocationID);
+            const cachedItem = this.cache.get(cacheKey);
+            if (cachedItem) {
+                // With invocationID: exact match found - always a hit
+                // With TTL mode: must check expiration
+                if (context.invocationID !== undefined) {
+                    return (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$utils$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["toResponseCacheEntry"])(cachedItem.entry);
+                }
+                // TTL mode: check expiration
+                const now = Date.now();
+                if (cachedItem.expiresAt > now) {
+                    return (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$utils$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["toResponseCacheEntry"])(cachedItem.entry);
+                }
+                // TTL expired - clean up
+                this.cache.remove(cacheKey);
+            }
+            // Warn if this invocation had entries evicted - indicates cache may be too small.
+            if (context.invocationID && this.evictedInvocationIDs.has(context.invocationID)) {
+                (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$build$2f$output$2f$log$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["warnOnce"])(`Response cache entry was evicted for invocation ${context.invocationID}. ` + `Consider increasing NEXT_PRIVATE_RESPONSE_CACHE_MAX_SIZE (current: ${this.maxSize}).`);
+            }
+        }
+        const { incrementalCache, isOnDemandRevalidate = false, isFallback = false, isRoutePPREnabled = false, isPrefetch = false, waitUntil, routeKind, invocationID } = context;
+        const response = await this.getBatcher.batch({
+            key,
+            isOnDemandRevalidate
+        }, ({ resolve })=>{
+            const promise = this.handleGet(key, responseGenerator, {
+                incrementalCache,
+                isOnDemandRevalidate,
+                isFallback,
+                isRoutePPREnabled,
+                isPrefetch,
+                routeKind,
+                invocationID
+            }, resolve);
+            // We need to ensure background revalidates are passed to waitUntil.
+            if (waitUntil) waitUntil(promise);
+            return promise;
+        });
+        return (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$utils$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["toResponseCacheEntry"])(response);
+    }
+    /**
+   * Handles the get request for the response cache.
+   *
+   * @param key - The key to get the response cache entry for.
+   * @param responseGenerator - The response generator to use to generate the response cache entry.
+   * @param context - The context for the get request.
+   * @param resolve - The resolve function to use to resolve the response cache entry.
+   * @returns The response cache entry.
+   */ async handleGet(key, responseGenerator, context, resolve) {
+        let previousIncrementalCacheEntry = null;
+        let resolved = false;
+        try {
+            // Get the previous cache entry if not in minimal mode
+            previousIncrementalCacheEntry = !this.minimal_mode ? await context.incrementalCache.get(key, {
+                kind: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$utils$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["routeKindToIncrementalCacheKind"])(context.routeKind),
+                isRoutePPREnabled: context.isRoutePPREnabled,
+                isFallback: context.isFallback
+            }) : null;
+            if (previousIncrementalCacheEntry && !context.isOnDemandRevalidate) {
+                resolve(previousIncrementalCacheEntry);
+                resolved = true;
+                if (!previousIncrementalCacheEntry.isStale || context.isPrefetch) {
+                    // The cached value is still valid, so we don't need to update it yet.
+                    return previousIncrementalCacheEntry;
+                }
+            }
+            // Revalidate the cache entry
+            const incrementalResponseCacheEntry = await this.revalidate(key, context.incrementalCache, context.isRoutePPREnabled, context.isFallback, responseGenerator, previousIncrementalCacheEntry, previousIncrementalCacheEntry !== null && !context.isOnDemandRevalidate, undefined, context.invocationID);
+            // Handle null response
+            if (!incrementalResponseCacheEntry) {
+                // Remove the cache item if it was set so we don't use it again.
+                if (this.minimal_mode) {
+                    const cacheKey = createCacheKey(key, context.invocationID);
+                    this.cache.remove(cacheKey);
+                }
+                return null;
+            }
+            // Resolve for on-demand revalidation or if not already resolved
+            if (context.isOnDemandRevalidate && !resolved) {
+                return incrementalResponseCacheEntry;
+            }
+            return incrementalResponseCacheEntry;
+        } catch (err) {
+            // If we've already resolved the cache entry, we can't reject as we
+            // already resolved the cache entry so log the error here.
+            if (resolved) {
+                console.error(err);
+                return null;
+            }
+            throw err;
+        }
+    }
+    /**
+   * Revalidates the cache entry for the given key.
+   *
+   * @param key - The key to revalidate the cache entry for.
+   * @param incrementalCache - The incremental cache to use to revalidate the cache entry.
+   * @param isRoutePPREnabled - Whether the route is PPR enabled.
+   * @param isFallback - Whether the route is a fallback.
+   * @param responseGenerator - The response generator to use to generate the response cache entry.
+   * @param previousIncrementalCacheEntry - The previous cache entry to use to revalidate the cache entry.
+   * @param hasResolved - Whether the response has been resolved.
+   * @param waitUntil - Optional function to register background work.
+   * @param invocationID - The invocation ID for cache key scoping.
+   * @returns The revalidated cache entry.
+   */ async revalidate(key, incrementalCache, isRoutePPREnabled, isFallback, responseGenerator, previousIncrementalCacheEntry, hasResolved, waitUntil, invocationID) {
+        return this.revalidateBatcher.batch(key, ()=>{
+            const promise = this.handleRevalidate(key, incrementalCache, isRoutePPREnabled, isFallback, responseGenerator, previousIncrementalCacheEntry, hasResolved, invocationID);
+            // We need to ensure background revalidates are passed to waitUntil.
+            if (waitUntil) waitUntil(promise);
+            return promise;
+        });
+    }
+    async handleRevalidate(key, incrementalCache, isRoutePPREnabled, isFallback, responseGenerator, previousIncrementalCacheEntry, hasResolved, invocationID) {
+        try {
+            // Generate the response cache entry using the response generator.
+            const responseCacheEntry = await responseGenerator({
+                hasResolved,
+                previousCacheEntry: previousIncrementalCacheEntry,
+                isRevalidating: true
+            });
+            if (!responseCacheEntry) {
+                return null;
+            }
+            // Convert the response cache entry to an incremental response cache entry.
+            const incrementalResponseCacheEntry = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$utils$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["fromResponseCacheEntry"])({
+                ...responseCacheEntry,
+                isMiss: !previousIncrementalCacheEntry
+            });
+            // We want to persist the result only if it has a cache control value
+            // defined.
+            if (incrementalResponseCacheEntry.cacheControl) {
+                if (this.minimal_mode) {
+                    // Set TTL expiration for cache hit validation. Entries are validated
+                    // by invocationID when available, with TTL as a fallback for providers
+                    // that don't send x-invocation-id. Memory is managed by LRU eviction.
+                    const cacheKey = createCacheKey(key, invocationID);
+                    this.cache.set(cacheKey, {
+                        entry: incrementalResponseCacheEntry,
+                        expiresAt: Date.now() + this.ttl
+                    });
+                } else {
+                    await incrementalCache.set(key, incrementalResponseCacheEntry.value, {
+                        cacheControl: incrementalResponseCacheEntry.cacheControl,
+                        isRoutePPREnabled,
+                        isFallback
+                    });
+                }
+            }
+            return incrementalResponseCacheEntry;
+        } catch (err) {
+            // When a path is erroring we automatically re-set the existing cache
+            // with new revalidate and expire times to prevent non-stop retrying.
+            if (previousIncrementalCacheEntry == null ? void 0 : previousIncrementalCacheEntry.cacheControl) {
+                const revalidate = Math.min(Math.max(previousIncrementalCacheEntry.cacheControl.revalidate || 3, 3), 30);
+                const expire = previousIncrementalCacheEntry.cacheControl.expire === undefined ? undefined : Math.max(revalidate + 3, previousIncrementalCacheEntry.cacheControl.expire);
+                await incrementalCache.set(key, previousIncrementalCacheEntry.value, {
+                    cacheControl: {
+                        revalidate: revalidate,
+                        expire: expire
+                    },
+                    isRoutePPREnabled,
+                    isFallback
+                });
+            }
+            // We haven't resolved yet, so let's throw to indicate an error.
+            throw err;
+        }
+    }
+}
+}),
+"[project]/node_modules/next/dist/shared/lib/i18n/detect-domain-locale.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "detectDomainLocale", {
+    enumerable: true,
+    get: function() {
+        return detectDomainLocale;
+    }
+});
+function detectDomainLocale(domainItems, hostname, detectedLocale) {
+    if (!domainItems) return;
+    if (detectedLocale) {
+        detectedLocale = detectedLocale.toLowerCase();
+    }
+    for (const item of domainItems){
+        // remove port if present
+        const domainHostname = item.domain?.split(':', 1)[0].toLowerCase();
+        if (hostname === domainHostname || detectedLocale === item.defaultLocale.toLowerCase() || item.locales?.some((locale)=>locale.toLowerCase() === detectedLocale)) {
+            return item;
+        }
+    }
+}
+}),
+"[project]/node_modules/next/dist/shared/lib/router/utils/remove-trailing-slash.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+/**
+ * Removes the trailing slash for a given route or page path. Preserves the
+ * root page. Examples:
+ *   - `/foo/bar/` -> `/foo/bar`
+ *   - `/foo/bar` -> `/foo/bar`
+ *   - `/` -> `/`
+ */ Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "removeTrailingSlash", {
+    enumerable: true,
+    get: function() {
+        return removeTrailingSlash;
+    }
+});
+function removeTrailingSlash(route) {
+    return route.replace(/\/$/, '') || '/';
+}
+}),
+"[project]/node_modules/next/dist/shared/lib/router/utils/parse-path.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+/**
+ * Given a path this function will find the pathname, query and hash and return
+ * them. This is useful to parse full paths on the client side.
+ * @param path A path to parse e.g. /foo/bar?id=1#hash
+ */ Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "parsePath", {
+    enumerable: true,
+    get: function() {
+        return parsePath;
+    }
+});
+function parsePath(path) {
+    const hashIndex = path.indexOf('#');
+    const queryIndex = path.indexOf('?');
+    const hasQuery = queryIndex > -1 && (hashIndex < 0 || queryIndex < hashIndex);
+    if (hasQuery || hashIndex > -1) {
+        return {
+            pathname: path.substring(0, hasQuery ? queryIndex : hashIndex),
+            query: hasQuery ? path.substring(queryIndex, hashIndex > -1 ? hashIndex : undefined) : '',
+            hash: hashIndex > -1 ? path.slice(hashIndex) : ''
+        };
+    }
+    return {
+        pathname: path,
+        query: '',
+        hash: ''
+    };
+}
+}),
+"[project]/node_modules/next/dist/shared/lib/router/utils/add-path-prefix.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "addPathPrefix", {
+    enumerable: true,
+    get: function() {
+        return addPathPrefix;
+    }
+});
+const _parsepath = __turbopack_context__.r("[project]/node_modules/next/dist/shared/lib/router/utils/parse-path.js [app-route] (ecmascript)");
+function addPathPrefix(path, prefix) {
+    if (!path.startsWith('/') || !prefix) {
+        return path;
+    }
+    const { pathname, query, hash } = (0, _parsepath.parsePath)(path);
+    return `${prefix}${pathname}${query}${hash}`;
+}
+}),
+"[project]/node_modules/next/dist/shared/lib/router/utils/add-path-suffix.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "addPathSuffix", {
+    enumerable: true,
+    get: function() {
+        return addPathSuffix;
+    }
+});
+const _parsepath = __turbopack_context__.r("[project]/node_modules/next/dist/shared/lib/router/utils/parse-path.js [app-route] (ecmascript)");
+function addPathSuffix(path, suffix) {
+    if (!path.startsWith('/') || !suffix) {
+        return path;
+    }
+    const { pathname, query, hash } = (0, _parsepath.parsePath)(path);
+    return `${pathname}${suffix}${query}${hash}`;
+}
+}),
+"[project]/node_modules/next/dist/shared/lib/router/utils/path-has-prefix.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "pathHasPrefix", {
+    enumerable: true,
+    get: function() {
+        return pathHasPrefix;
+    }
+});
+const _parsepath = __turbopack_context__.r("[project]/node_modules/next/dist/shared/lib/router/utils/parse-path.js [app-route] (ecmascript)");
+function pathHasPrefix(path, prefix) {
+    if (typeof path !== 'string') {
+        return false;
+    }
+    const { pathname } = (0, _parsepath.parsePath)(path);
+    return pathname === prefix || pathname.startsWith(prefix + '/');
+}
+}),
+"[project]/node_modules/next/dist/shared/lib/router/utils/add-locale.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "addLocale", {
+    enumerable: true,
+    get: function() {
+        return addLocale;
+    }
+});
+const _addpathprefix = __turbopack_context__.r("[project]/node_modules/next/dist/shared/lib/router/utils/add-path-prefix.js [app-route] (ecmascript)");
+const _pathhasprefix = __turbopack_context__.r("[project]/node_modules/next/dist/shared/lib/router/utils/path-has-prefix.js [app-route] (ecmascript)");
+function addLocale(path, locale, defaultLocale, ignorePrefix) {
+    // If no locale was given or the locale is the default locale, we don't need
+    // to prefix the path.
+    if (!locale || locale === defaultLocale) return path;
+    const lower = path.toLowerCase();
+    // If the path is an API path or the path already has the locale prefix, we
+    // don't need to prefix the path.
+    if (!ignorePrefix) {
+        if ((0, _pathhasprefix.pathHasPrefix)(lower, '/api')) return path;
+        if ((0, _pathhasprefix.pathHasPrefix)(lower, `/${locale.toLowerCase()}`)) return path;
+    }
+    // Add the locale prefix to the path.
+    return (0, _addpathprefix.addPathPrefix)(path, `/${locale}`);
+}
+}),
+"[project]/node_modules/next/dist/shared/lib/router/utils/format-next-pathname-info.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "formatNextPathnameInfo", {
+    enumerable: true,
+    get: function() {
+        return formatNextPathnameInfo;
+    }
+});
+const _removetrailingslash = __turbopack_context__.r("[project]/node_modules/next/dist/shared/lib/router/utils/remove-trailing-slash.js [app-route] (ecmascript)");
+const _addpathprefix = __turbopack_context__.r("[project]/node_modules/next/dist/shared/lib/router/utils/add-path-prefix.js [app-route] (ecmascript)");
+const _addpathsuffix = __turbopack_context__.r("[project]/node_modules/next/dist/shared/lib/router/utils/add-path-suffix.js [app-route] (ecmascript)");
+const _addlocale = __turbopack_context__.r("[project]/node_modules/next/dist/shared/lib/router/utils/add-locale.js [app-route] (ecmascript)");
+function formatNextPathnameInfo(info) {
+    let pathname = (0, _addlocale.addLocale)(info.pathname, info.locale, info.buildId ? undefined : info.defaultLocale, info.ignorePrefix);
+    if (info.buildId || !info.trailingSlash) {
+        pathname = (0, _removetrailingslash.removeTrailingSlash)(pathname);
+    }
+    if (info.buildId) {
+        pathname = (0, _addpathsuffix.addPathSuffix)((0, _addpathprefix.addPathPrefix)(pathname, `/_next/data/${info.buildId}`), info.pathname === '/' ? 'index.json' : '.json');
+    }
+    pathname = (0, _addpathprefix.addPathPrefix)(pathname, info.basePath);
+    return !info.buildId && info.trailingSlash ? !pathname.endsWith('/') ? (0, _addpathsuffix.addPathSuffix)(pathname, '/') : pathname : (0, _removetrailingslash.removeTrailingSlash)(pathname);
+}
+}),
+"[project]/node_modules/next/dist/shared/lib/get-hostname.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "getHostname", {
+    enumerable: true,
+    get: function() {
+        return getHostname;
+    }
+});
+function getHostname(parsed, headers) {
+    // Get the hostname from the headers if it exists, otherwise use the parsed
+    // hostname.
+    let hostname;
+    if (headers?.host && !Array.isArray(headers.host)) {
+        hostname = headers.host.toString().split(':', 1)[0];
+    } else if (parsed.hostname) {
+        hostname = parsed.hostname;
+    } else return;
+    return hostname.toLowerCase();
+}
+}),
+"[project]/node_modules/next/dist/shared/lib/i18n/normalize-locale-path.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "normalizeLocalePath", {
+    enumerable: true,
+    get: function() {
+        return normalizeLocalePath;
+    }
+});
+/**
+ * A cache of lowercased locales for each list of locales. This is stored as a
+ * WeakMap so if the locales are garbage collected, the cache entry will be
+ * removed as well.
+ */ const cache = new WeakMap();
+function normalizeLocalePath(pathname, locales) {
+    // If locales is undefined, return the pathname as is.
+    if (!locales) return {
+        pathname
+    };
+    // Get the cached lowercased locales or create a new cache entry.
+    let lowercasedLocales = cache.get(locales);
+    if (!lowercasedLocales) {
+        lowercasedLocales = locales.map((locale)=>locale.toLowerCase());
+        cache.set(locales, lowercasedLocales);
+    }
+    let detectedLocale;
+    // The first segment will be empty, because it has a leading `/`. If
+    // there is no further segment, there is no locale (or it's the default).
+    const segments = pathname.split('/', 2);
+    // If there's no second segment (ie, the pathname is just `/`), there's no
+    // locale.
+    if (!segments[1]) return {
+        pathname
+    };
+    // The second segment will contain the locale part if any.
+    const segment = segments[1].toLowerCase();
+    // See if the segment matches one of the locales. If it doesn't, there is
+    // no locale (or it's the default).
+    const index = lowercasedLocales.indexOf(segment);
+    if (index < 0) return {
+        pathname
+    };
+    // Return the case-sensitive locale.
+    detectedLocale = locales[index];
+    // Remove the `/${locale}` part of the pathname.
+    pathname = pathname.slice(detectedLocale.length + 1) || '/';
+    return {
+        pathname,
+        detectedLocale
+    };
+}
+}),
+"[project]/node_modules/next/dist/shared/lib/router/utils/remove-path-prefix.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "removePathPrefix", {
+    enumerable: true,
+    get: function() {
+        return removePathPrefix;
+    }
+});
+const _pathhasprefix = __turbopack_context__.r("[project]/node_modules/next/dist/shared/lib/router/utils/path-has-prefix.js [app-route] (ecmascript)");
+function removePathPrefix(path, prefix) {
+    // If the path doesn't start with the prefix we can return it as is. This
+    // protects us from situations where the prefix is a substring of the path
+    // prefix such as:
+    //
+    // For prefix: /blog
+    //
+    //   /blog -> true
+    //   /blog/ -> true
+    //   /blog/1 -> true
+    //   /blogging -> false
+    //   /blogging/ -> false
+    //   /blogging/1 -> false
+    if (!(0, _pathhasprefix.pathHasPrefix)(path, prefix)) {
+        return path;
+    }
+    // Remove the prefix from the path via slicing.
+    const withoutPrefix = path.slice(prefix.length);
+    // If the path without the prefix starts with a `/` we can return it as is.
+    if (withoutPrefix.startsWith('/')) {
+        return withoutPrefix;
+    }
+    // If the path without the prefix doesn't start with a `/` we need to add it
+    // back to the path to make sure it's a valid path.
+    return `/${withoutPrefix}`;
+}
+}),
+"[project]/node_modules/next/dist/shared/lib/router/utils/get-next-pathname-info.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "getNextPathnameInfo", {
+    enumerable: true,
+    get: function() {
+        return getNextPathnameInfo;
+    }
+});
+const _normalizelocalepath = __turbopack_context__.r("[project]/node_modules/next/dist/shared/lib/i18n/normalize-locale-path.js [app-route] (ecmascript)");
+const _removepathprefix = __turbopack_context__.r("[project]/node_modules/next/dist/shared/lib/router/utils/remove-path-prefix.js [app-route] (ecmascript)");
+const _pathhasprefix = __turbopack_context__.r("[project]/node_modules/next/dist/shared/lib/router/utils/path-has-prefix.js [app-route] (ecmascript)");
+function getNextPathnameInfo(pathname, options) {
+    const { basePath, i18n, trailingSlash } = options.nextConfig ?? {};
+    const info = {
+        pathname,
+        trailingSlash: pathname !== '/' ? pathname.endsWith('/') : trailingSlash
+    };
+    if (basePath && (0, _pathhasprefix.pathHasPrefix)(info.pathname, basePath)) {
+        info.pathname = (0, _removepathprefix.removePathPrefix)(info.pathname, basePath);
+        info.basePath = basePath;
+    }
+    let pathnameNoDataPrefix = info.pathname;
+    if (info.pathname.startsWith('/_next/data/') && info.pathname.endsWith('.json')) {
+        const paths = info.pathname.replace(/^\/_next\/data\//, '').replace(/\.json$/, '').split('/');
+        const buildId = paths[0];
+        info.buildId = buildId;
+        pathnameNoDataPrefix = paths[1] !== 'index' ? `/${paths.slice(1).join('/')}` : '/';
+        // update pathname with normalized if enabled although
+        // we use normalized to populate locale info still
+        if (options.parseData === true) {
+            info.pathname = pathnameNoDataPrefix;
+        }
+    }
+    // If provided, use the locale route normalizer to detect the locale instead
+    // of the function below.
+    if (i18n) {
+        let result = options.i18nProvider ? options.i18nProvider.analyze(info.pathname) : (0, _normalizelocalepath.normalizeLocalePath)(info.pathname, i18n.locales);
+        info.locale = result.detectedLocale;
+        info.pathname = result.pathname ?? info.pathname;
+        if (!result.detectedLocale && info.buildId) {
+            result = options.i18nProvider ? options.i18nProvider.analyze(pathnameNoDataPrefix) : (0, _normalizelocalepath.normalizeLocalePath)(pathnameNoDataPrefix, i18n.locales);
+            if (result.detectedLocale) {
+                info.locale = result.detectedLocale;
+            }
+        }
+    }
+    return info;
+}
+}),
+"[project]/node_modules/next/dist/server/web/next-url.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "NextURL", {
+    enumerable: true,
+    get: function() {
+        return NextURL;
+    }
+});
+const _detectdomainlocale = __turbopack_context__.r("[project]/node_modules/next/dist/shared/lib/i18n/detect-domain-locale.js [app-route] (ecmascript)");
+const _formatnextpathnameinfo = __turbopack_context__.r("[project]/node_modules/next/dist/shared/lib/router/utils/format-next-pathname-info.js [app-route] (ecmascript)");
+const _gethostname = __turbopack_context__.r("[project]/node_modules/next/dist/shared/lib/get-hostname.js [app-route] (ecmascript)");
+const _getnextpathnameinfo = __turbopack_context__.r("[project]/node_modules/next/dist/shared/lib/router/utils/get-next-pathname-info.js [app-route] (ecmascript)");
+const REGEX_LOCALHOST_HOSTNAME = /^(?:127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}|\[::1\]|localhost)$/;
+function parseURL(url, base) {
+    const parsed = new URL(String(url), base && String(base));
+    if (REGEX_LOCALHOST_HOSTNAME.test(parsed.hostname)) {
+        parsed.hostname = 'localhost';
+    }
+    return parsed;
+}
+const Internal = Symbol('NextURLInternal');
+class NextURL {
+    constructor(input, baseOrOpts, opts){
+        let base;
+        let options;
+        if (typeof baseOrOpts === 'object' && 'pathname' in baseOrOpts || typeof baseOrOpts === 'string') {
+            base = baseOrOpts;
+            options = opts || {};
+        } else {
+            options = opts || baseOrOpts || {};
+        }
+        this[Internal] = {
+            url: parseURL(input, base ?? options.base),
+            options: options,
+            basePath: ''
+        };
+        this.analyze();
+    }
+    analyze() {
+        var _this_Internal_options_nextConfig_i18n, _this_Internal_options_nextConfig, _this_Internal_domainLocale, _this_Internal_options_nextConfig_i18n1, _this_Internal_options_nextConfig1;
+        const info = (0, _getnextpathnameinfo.getNextPathnameInfo)(this[Internal].url.pathname, {
+            nextConfig: this[Internal].options.nextConfig,
+            parseData: !("TURBOPACK compile-time value", void 0),
+            i18nProvider: this[Internal].options.i18nProvider
+        });
+        const hostname = (0, _gethostname.getHostname)(this[Internal].url, this[Internal].options.headers);
+        this[Internal].domainLocale = this[Internal].options.i18nProvider ? this[Internal].options.i18nProvider.detectDomainLocale(hostname) : (0, _detectdomainlocale.detectDomainLocale)((_this_Internal_options_nextConfig = this[Internal].options.nextConfig) == null ? void 0 : (_this_Internal_options_nextConfig_i18n = _this_Internal_options_nextConfig.i18n) == null ? void 0 : _this_Internal_options_nextConfig_i18n.domains, hostname);
+        const defaultLocale = ((_this_Internal_domainLocale = this[Internal].domainLocale) == null ? void 0 : _this_Internal_domainLocale.defaultLocale) || ((_this_Internal_options_nextConfig1 = this[Internal].options.nextConfig) == null ? void 0 : (_this_Internal_options_nextConfig_i18n1 = _this_Internal_options_nextConfig1.i18n) == null ? void 0 : _this_Internal_options_nextConfig_i18n1.defaultLocale);
+        this[Internal].url.pathname = info.pathname;
+        this[Internal].defaultLocale = defaultLocale;
+        this[Internal].basePath = info.basePath ?? '';
+        this[Internal].buildId = info.buildId;
+        this[Internal].locale = info.locale ?? defaultLocale;
+        this[Internal].trailingSlash = info.trailingSlash;
+    }
+    formatPathname() {
+        return (0, _formatnextpathnameinfo.formatNextPathnameInfo)({
+            basePath: this[Internal].basePath,
+            buildId: this[Internal].buildId,
+            defaultLocale: !this[Internal].options.forceLocale ? this[Internal].defaultLocale : undefined,
+            locale: this[Internal].locale,
+            pathname: this[Internal].url.pathname,
+            trailingSlash: this[Internal].trailingSlash
+        });
+    }
+    formatSearch() {
+        return this[Internal].url.search;
+    }
+    get buildId() {
+        return this[Internal].buildId;
+    }
+    set buildId(buildId) {
+        this[Internal].buildId = buildId;
+    }
+    get locale() {
+        return this[Internal].locale ?? '';
+    }
+    set locale(locale) {
+        var _this_Internal_options_nextConfig_i18n, _this_Internal_options_nextConfig;
+        if (!this[Internal].locale || !((_this_Internal_options_nextConfig = this[Internal].options.nextConfig) == null ? void 0 : (_this_Internal_options_nextConfig_i18n = _this_Internal_options_nextConfig.i18n) == null ? void 0 : _this_Internal_options_nextConfig_i18n.locales.includes(locale))) {
+            throw Object.defineProperty(new TypeError(`The NextURL configuration includes no locale "${locale}"`), "__NEXT_ERROR_CODE", {
+                value: "E597",
+                enumerable: false,
+                configurable: true
+            });
+        }
+        this[Internal].locale = locale;
+    }
+    get defaultLocale() {
+        return this[Internal].defaultLocale;
+    }
+    get domainLocale() {
+        return this[Internal].domainLocale;
+    }
+    get searchParams() {
+        return this[Internal].url.searchParams;
+    }
+    get host() {
+        return this[Internal].url.host;
+    }
+    set host(value) {
+        this[Internal].url.host = value;
+    }
+    get hostname() {
+        return this[Internal].url.hostname;
+    }
+    set hostname(value) {
+        this[Internal].url.hostname = value;
+    }
+    get port() {
+        return this[Internal].url.port;
+    }
+    set port(value) {
+        this[Internal].url.port = value;
+    }
+    get protocol() {
+        return this[Internal].url.protocol;
+    }
+    set protocol(value) {
+        this[Internal].url.protocol = value;
+    }
+    get href() {
+        const pathname = this.formatPathname();
+        const search = this.formatSearch();
+        return `${this.protocol}//${this.host}${pathname}${search}${this.hash}`;
+    }
+    set href(url) {
+        this[Internal].url = parseURL(url);
+        this.analyze();
+    }
+    get origin() {
+        return this[Internal].url.origin;
+    }
+    get pathname() {
+        return this[Internal].url.pathname;
+    }
+    set pathname(value) {
+        this[Internal].url.pathname = value;
+    }
+    get hash() {
+        return this[Internal].url.hash;
+    }
+    set hash(value) {
+        this[Internal].url.hash = value;
+    }
+    get search() {
+        return this[Internal].url.search;
+    }
+    set search(value) {
+        this[Internal].url.search = value;
+    }
+    get password() {
+        return this[Internal].url.password;
+    }
+    set password(value) {
+        this[Internal].url.password = value;
+    }
+    get username() {
+        return this[Internal].url.username;
+    }
+    set username(value) {
+        this[Internal].url.username = value;
+    }
+    get basePath() {
+        return this[Internal].basePath;
+    }
+    set basePath(value) {
+        this[Internal].basePath = value.startsWith('/') ? value : `/${value}`;
+    }
+    toString() {
+        return this.href;
+    }
+    toJSON() {
+        return this.href;
+    }
+    [Symbol.for('edge-runtime.inspect.custom')]() {
+        return {
+            href: this.href,
+            origin: this.origin,
+            protocol: this.protocol,
+            username: this.username,
+            password: this.password,
+            host: this.host,
+            hostname: this.hostname,
+            port: this.port,
+            pathname: this.pathname,
+            search: this.search,
+            searchParams: this.searchParams,
+            hash: this.hash
+        };
+    }
+    clone() {
+        return new NextURL(String(this), this[Internal].options);
+    }
+}
+}),
+"[project]/node_modules/next/dist/lib/constants.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+0 && (module.exports = {
+    ACTION_SUFFIX: null,
+    APP_DIR_ALIAS: null,
+    CACHE_ONE_YEAR_SECONDS: null,
+    DOT_NEXT_ALIAS: null,
+    ESLINT_DEFAULT_DIRS: null,
+    GSP_NO_RETURNED_VALUE: null,
+    GSSP_COMPONENT_MEMBER_ERROR: null,
+    GSSP_NO_RETURNED_VALUE: null,
+    HTML_CONTENT_TYPE_HEADER: null,
+    INFINITE_CACHE: null,
+    INSTRUMENTATION_HOOK_FILENAME: null,
+    JSON_CONTENT_TYPE_HEADER: null,
+    MATCHED_PATH_HEADER: null,
+    MIDDLEWARE_FILENAME: null,
+    MIDDLEWARE_LOCATION_REGEXP: null,
+    NEXT_BODY_SUFFIX: null,
+    NEXT_CACHE_IMPLICIT_TAG_ID: null,
+    NEXT_CACHE_REVALIDATED_TAGS_HEADER: null,
+    NEXT_CACHE_REVALIDATE_TAG_TOKEN_HEADER: null,
+    NEXT_CACHE_ROOT_PARAM_TAG_ID: null,
+    NEXT_CACHE_SOFT_TAG_MAX_LENGTH: null,
+    NEXT_CACHE_TAGS_HEADER: null,
+    NEXT_CACHE_TAG_MAX_ITEMS: null,
+    NEXT_CACHE_TAG_MAX_LENGTH: null,
+    NEXT_DATA_SUFFIX: null,
+    NEXT_INTERCEPTION_MARKER_PREFIX: null,
+    NEXT_META_SUFFIX: null,
+    NEXT_NAV_DEPLOYMENT_ID_HEADER: null,
+    NEXT_QUERY_PARAM_PREFIX: null,
+    NEXT_RESUME_HEADER: null,
+    NEXT_RESUME_STATE_LENGTH_HEADER: null,
+    NON_STANDARD_NODE_ENV: null,
+    PAGES_DIR_ALIAS: null,
+    PRERENDER_REVALIDATE_HEADER: null,
+    PRERENDER_REVALIDATE_ONLY_GENERATED_HEADER: null,
+    PROXY_FILENAME: null,
+    PROXY_LOCATION_REGEXP: null,
+    PUBLIC_DIR_MIDDLEWARE_CONFLICT: null,
+    ROOT_DIR_ALIAS: null,
+    RSC_ACTION_CLIENT_WRAPPER_ALIAS: null,
+    RSC_ACTION_ENCRYPTION_ALIAS: null,
+    RSC_ACTION_PROXY_ALIAS: null,
+    RSC_ACTION_VALIDATE_ALIAS: null,
+    RSC_CACHE_WRAPPER_ALIAS: null,
+    RSC_DYNAMIC_IMPORT_WRAPPER_ALIAS: null,
+    RSC_MOD_REF_PROXY_ALIAS: null,
+    RSC_SEGMENTS_DIR_SUFFIX: null,
+    RSC_SEGMENT_SUFFIX: null,
+    RSC_SUFFIX: null,
+    SERVER_PROPS_EXPORT_ERROR: null,
+    SERVER_PROPS_GET_INIT_PROPS_CONFLICT: null,
+    SERVER_PROPS_SSG_CONFLICT: null,
+    SERVER_RUNTIME: null,
+    SSG_FALLBACK_EXPORT_ERROR: null,
+    SSG_GET_INITIAL_PROPS_CONFLICT: null,
+    STATIC_STATUS_PAGE_GET_INITIAL_PROPS_ERROR: null,
+    TEXT_PLAIN_CONTENT_TYPE_HEADER: null,
+    UNSTABLE_REVALIDATE_RENAME_ERROR: null,
+    WEBPACK_LAYERS: null,
+    WEBPACK_RESOURCE_QUERIES: null,
+    WEB_SOCKET_MAX_RECONNECTIONS: null
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: all[name]
+    });
+}
+_export(exports, {
+    ACTION_SUFFIX: function() {
+        return ACTION_SUFFIX;
+    },
+    APP_DIR_ALIAS: function() {
+        return APP_DIR_ALIAS;
+    },
+    CACHE_ONE_YEAR_SECONDS: function() {
+        return CACHE_ONE_YEAR_SECONDS;
+    },
+    DOT_NEXT_ALIAS: function() {
+        return DOT_NEXT_ALIAS;
+    },
+    ESLINT_DEFAULT_DIRS: function() {
+        return ESLINT_DEFAULT_DIRS;
+    },
+    GSP_NO_RETURNED_VALUE: function() {
+        return GSP_NO_RETURNED_VALUE;
+    },
+    GSSP_COMPONENT_MEMBER_ERROR: function() {
+        return GSSP_COMPONENT_MEMBER_ERROR;
+    },
+    GSSP_NO_RETURNED_VALUE: function() {
+        return GSSP_NO_RETURNED_VALUE;
+    },
+    HTML_CONTENT_TYPE_HEADER: function() {
+        return HTML_CONTENT_TYPE_HEADER;
+    },
+    INFINITE_CACHE: function() {
+        return INFINITE_CACHE;
+    },
+    INSTRUMENTATION_HOOK_FILENAME: function() {
+        return INSTRUMENTATION_HOOK_FILENAME;
+    },
+    JSON_CONTENT_TYPE_HEADER: function() {
+        return JSON_CONTENT_TYPE_HEADER;
+    },
+    MATCHED_PATH_HEADER: function() {
+        return MATCHED_PATH_HEADER;
+    },
+    MIDDLEWARE_FILENAME: function() {
+        return MIDDLEWARE_FILENAME;
+    },
+    MIDDLEWARE_LOCATION_REGEXP: function() {
+        return MIDDLEWARE_LOCATION_REGEXP;
+    },
+    NEXT_BODY_SUFFIX: function() {
+        return NEXT_BODY_SUFFIX;
+    },
+    NEXT_CACHE_IMPLICIT_TAG_ID: function() {
+        return NEXT_CACHE_IMPLICIT_TAG_ID;
+    },
+    NEXT_CACHE_REVALIDATED_TAGS_HEADER: function() {
+        return NEXT_CACHE_REVALIDATED_TAGS_HEADER;
+    },
+    NEXT_CACHE_REVALIDATE_TAG_TOKEN_HEADER: function() {
+        return NEXT_CACHE_REVALIDATE_TAG_TOKEN_HEADER;
+    },
+    NEXT_CACHE_ROOT_PARAM_TAG_ID: function() {
+        return NEXT_CACHE_ROOT_PARAM_TAG_ID;
+    },
+    NEXT_CACHE_SOFT_TAG_MAX_LENGTH: function() {
+        return NEXT_CACHE_SOFT_TAG_MAX_LENGTH;
+    },
+    NEXT_CACHE_TAGS_HEADER: function() {
+        return NEXT_CACHE_TAGS_HEADER;
+    },
+    NEXT_CACHE_TAG_MAX_ITEMS: function() {
+        return NEXT_CACHE_TAG_MAX_ITEMS;
+    },
+    NEXT_CACHE_TAG_MAX_LENGTH: function() {
+        return NEXT_CACHE_TAG_MAX_LENGTH;
+    },
+    NEXT_DATA_SUFFIX: function() {
+        return NEXT_DATA_SUFFIX;
+    },
+    NEXT_INTERCEPTION_MARKER_PREFIX: function() {
+        return NEXT_INTERCEPTION_MARKER_PREFIX;
+    },
+    NEXT_META_SUFFIX: function() {
+        return NEXT_META_SUFFIX;
+    },
+    NEXT_NAV_DEPLOYMENT_ID_HEADER: function() {
+        return NEXT_NAV_DEPLOYMENT_ID_HEADER;
+    },
+    NEXT_QUERY_PARAM_PREFIX: function() {
+        return NEXT_QUERY_PARAM_PREFIX;
+    },
+    NEXT_RESUME_HEADER: function() {
+        return NEXT_RESUME_HEADER;
+    },
+    NEXT_RESUME_STATE_LENGTH_HEADER: function() {
+        return NEXT_RESUME_STATE_LENGTH_HEADER;
+    },
+    NON_STANDARD_NODE_ENV: function() {
+        return NON_STANDARD_NODE_ENV;
+    },
+    PAGES_DIR_ALIAS: function() {
+        return PAGES_DIR_ALIAS;
+    },
+    PRERENDER_REVALIDATE_HEADER: function() {
+        return PRERENDER_REVALIDATE_HEADER;
+    },
+    PRERENDER_REVALIDATE_ONLY_GENERATED_HEADER: function() {
+        return PRERENDER_REVALIDATE_ONLY_GENERATED_HEADER;
+    },
+    PROXY_FILENAME: function() {
+        return PROXY_FILENAME;
+    },
+    PROXY_LOCATION_REGEXP: function() {
+        return PROXY_LOCATION_REGEXP;
+    },
+    PUBLIC_DIR_MIDDLEWARE_CONFLICT: function() {
+        return PUBLIC_DIR_MIDDLEWARE_CONFLICT;
+    },
+    ROOT_DIR_ALIAS: function() {
+        return ROOT_DIR_ALIAS;
+    },
+    RSC_ACTION_CLIENT_WRAPPER_ALIAS: function() {
+        return RSC_ACTION_CLIENT_WRAPPER_ALIAS;
+    },
+    RSC_ACTION_ENCRYPTION_ALIAS: function() {
+        return RSC_ACTION_ENCRYPTION_ALIAS;
+    },
+    RSC_ACTION_PROXY_ALIAS: function() {
+        return RSC_ACTION_PROXY_ALIAS;
+    },
+    RSC_ACTION_VALIDATE_ALIAS: function() {
+        return RSC_ACTION_VALIDATE_ALIAS;
+    },
+    RSC_CACHE_WRAPPER_ALIAS: function() {
+        return RSC_CACHE_WRAPPER_ALIAS;
+    },
+    RSC_DYNAMIC_IMPORT_WRAPPER_ALIAS: function() {
+        return RSC_DYNAMIC_IMPORT_WRAPPER_ALIAS;
+    },
+    RSC_MOD_REF_PROXY_ALIAS: function() {
+        return RSC_MOD_REF_PROXY_ALIAS;
+    },
+    RSC_SEGMENTS_DIR_SUFFIX: function() {
+        return RSC_SEGMENTS_DIR_SUFFIX;
+    },
+    RSC_SEGMENT_SUFFIX: function() {
+        return RSC_SEGMENT_SUFFIX;
+    },
+    RSC_SUFFIX: function() {
+        return RSC_SUFFIX;
+    },
+    SERVER_PROPS_EXPORT_ERROR: function() {
+        return SERVER_PROPS_EXPORT_ERROR;
+    },
+    SERVER_PROPS_GET_INIT_PROPS_CONFLICT: function() {
+        return SERVER_PROPS_GET_INIT_PROPS_CONFLICT;
+    },
+    SERVER_PROPS_SSG_CONFLICT: function() {
+        return SERVER_PROPS_SSG_CONFLICT;
+    },
+    SERVER_RUNTIME: function() {
+        return SERVER_RUNTIME;
+    },
+    SSG_FALLBACK_EXPORT_ERROR: function() {
+        return SSG_FALLBACK_EXPORT_ERROR;
+    },
+    SSG_GET_INITIAL_PROPS_CONFLICT: function() {
+        return SSG_GET_INITIAL_PROPS_CONFLICT;
+    },
+    STATIC_STATUS_PAGE_GET_INITIAL_PROPS_ERROR: function() {
+        return STATIC_STATUS_PAGE_GET_INITIAL_PROPS_ERROR;
+    },
+    TEXT_PLAIN_CONTENT_TYPE_HEADER: function() {
+        return TEXT_PLAIN_CONTENT_TYPE_HEADER;
+    },
+    UNSTABLE_REVALIDATE_RENAME_ERROR: function() {
+        return UNSTABLE_REVALIDATE_RENAME_ERROR;
+    },
+    WEBPACK_LAYERS: function() {
+        return WEBPACK_LAYERS;
+    },
+    WEBPACK_RESOURCE_QUERIES: function() {
+        return WEBPACK_RESOURCE_QUERIES;
+    },
+    WEB_SOCKET_MAX_RECONNECTIONS: function() {
+        return WEB_SOCKET_MAX_RECONNECTIONS;
+    }
+});
+const TEXT_PLAIN_CONTENT_TYPE_HEADER = 'text/plain';
+const HTML_CONTENT_TYPE_HEADER = 'text/html; charset=utf-8';
+const JSON_CONTENT_TYPE_HEADER = 'application/json; charset=utf-8';
+const NEXT_QUERY_PARAM_PREFIX = 'nxtP';
+const NEXT_INTERCEPTION_MARKER_PREFIX = 'nxtI';
+const MATCHED_PATH_HEADER = 'x-matched-path';
+const PRERENDER_REVALIDATE_HEADER = 'x-prerender-revalidate';
+const PRERENDER_REVALIDATE_ONLY_GENERATED_HEADER = 'x-prerender-revalidate-if-generated';
+const RSC_SEGMENTS_DIR_SUFFIX = '.segments';
+const RSC_SEGMENT_SUFFIX = '.segment.rsc';
+const RSC_SUFFIX = '.rsc';
+const ACTION_SUFFIX = '.action';
+const NEXT_DATA_SUFFIX = '.json';
+const NEXT_META_SUFFIX = '.meta';
+const NEXT_BODY_SUFFIX = '.body';
+const NEXT_NAV_DEPLOYMENT_ID_HEADER = 'x-nextjs-deployment-id';
+const NEXT_CACHE_TAGS_HEADER = 'x-next-cache-tags';
+const NEXT_CACHE_REVALIDATED_TAGS_HEADER = 'x-next-revalidated-tags';
+const NEXT_CACHE_REVALIDATE_TAG_TOKEN_HEADER = 'x-next-revalidate-tag-token';
+const NEXT_RESUME_HEADER = 'next-resume';
+const NEXT_RESUME_STATE_LENGTH_HEADER = 'x-next-resume-state-length';
+const NEXT_CACHE_TAG_MAX_ITEMS = 128;
+const NEXT_CACHE_TAG_MAX_LENGTH = 256;
+const NEXT_CACHE_SOFT_TAG_MAX_LENGTH = 1024;
+const NEXT_CACHE_IMPLICIT_TAG_ID = '_N_T_';
+const NEXT_CACHE_ROOT_PARAM_TAG_ID = '_N_RP_';
+const CACHE_ONE_YEAR_SECONDS = 31536000;
+const INFINITE_CACHE = 0xfffffffe;
+const MIDDLEWARE_FILENAME = 'middleware';
+const MIDDLEWARE_LOCATION_REGEXP = `(?:src/)?${MIDDLEWARE_FILENAME}`;
+const PROXY_FILENAME = 'proxy';
+const PROXY_LOCATION_REGEXP = `(?:src/)?${PROXY_FILENAME}`;
+const INSTRUMENTATION_HOOK_FILENAME = 'instrumentation';
+const PAGES_DIR_ALIAS = 'private-next-pages';
+const DOT_NEXT_ALIAS = 'private-dot-next';
+const ROOT_DIR_ALIAS = 'private-next-root-dir';
+const APP_DIR_ALIAS = 'private-next-app-dir';
+const RSC_MOD_REF_PROXY_ALIAS = 'private-next-rsc-mod-ref-proxy';
+const RSC_ACTION_VALIDATE_ALIAS = 'private-next-rsc-action-validate';
+const RSC_ACTION_PROXY_ALIAS = 'private-next-rsc-server-reference';
+const RSC_CACHE_WRAPPER_ALIAS = 'private-next-rsc-cache-wrapper';
+const RSC_DYNAMIC_IMPORT_WRAPPER_ALIAS = 'private-next-rsc-track-dynamic-import';
+const RSC_ACTION_ENCRYPTION_ALIAS = 'private-next-rsc-action-encryption';
+const RSC_ACTION_CLIENT_WRAPPER_ALIAS = 'private-next-rsc-action-client-wrapper';
+const PUBLIC_DIR_MIDDLEWARE_CONFLICT = `You can not have a '_next' folder inside of your public folder. This conflicts with the internal '/_next' route. https://nextjs.org/docs/messages/public-next-folder-conflict`;
+const SSG_GET_INITIAL_PROPS_CONFLICT = `You can not use getInitialProps with getStaticProps. To use SSG, please remove your getInitialProps`;
+const SERVER_PROPS_GET_INIT_PROPS_CONFLICT = `You can not use getInitialProps with getServerSideProps. Please remove getInitialProps.`;
+const SERVER_PROPS_SSG_CONFLICT = `You can not use getStaticProps or getStaticPaths with getServerSideProps. To use SSG, please remove getServerSideProps`;
+const STATIC_STATUS_PAGE_GET_INITIAL_PROPS_ERROR = `can not have getInitialProps/getServerSideProps, https://nextjs.org/docs/messages/404-get-initial-props`;
+const SERVER_PROPS_EXPORT_ERROR = `pages with \`getServerSideProps\` can not be exported. See more info here: https://nextjs.org/docs/messages/gssp-export`;
+const GSP_NO_RETURNED_VALUE = 'Your `getStaticProps` function did not return an object. Did you forget to add a `return`?';
+const GSSP_NO_RETURNED_VALUE = 'Your `getServerSideProps` function did not return an object. Did you forget to add a `return`?';
+const UNSTABLE_REVALIDATE_RENAME_ERROR = 'The `unstable_revalidate` property is available for general use.\n' + 'Please use `revalidate` instead.';
+const GSSP_COMPONENT_MEMBER_ERROR = `can not be attached to a page's component and must be exported from the page. See more info here: https://nextjs.org/docs/messages/gssp-component-member`;
+const NON_STANDARD_NODE_ENV = `You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env`;
+const SSG_FALLBACK_EXPORT_ERROR = `Pages with \`fallback\` enabled in \`getStaticPaths\` can not be exported. See more info here: https://nextjs.org/docs/messages/ssg-fallback-true-export`;
+const ESLINT_DEFAULT_DIRS = [
+    'app',
+    'pages',
+    'components',
+    'lib',
+    'src'
+];
+const SERVER_RUNTIME = {
+    edge: 'edge',
+    experimentalEdge: 'experimental-edge',
+    nodejs: 'nodejs'
+};
+const WEB_SOCKET_MAX_RECONNECTIONS = 12;
+/**
+ * The names of the webpack layers. These layers are the primitives for the
+ * webpack chunks.
+ */ const WEBPACK_LAYERS_NAMES = {
+    /**
+   * The layer for the shared code between the client and server bundles.
+   */ shared: 'shared',
+    /**
+   * The layer for server-only runtime and picking up `react-server` export conditions.
+   * Including app router RSC pages and app router custom routes and metadata routes.
+   */ reactServerComponents: 'rsc',
+    /**
+   * Server Side Rendering layer for app (ssr).
+   */ serverSideRendering: 'ssr',
+    /**
+   * The browser client bundle layer for actions.
+   */ actionBrowser: 'action-browser',
+    /**
+   * The Node.js bundle layer for the API routes.
+   */ apiNode: 'api-node',
+    /**
+   * The Edge Lite bundle layer for the API routes.
+   */ apiEdge: 'api-edge',
+    /**
+   * The layer for the middleware code.
+   */ middleware: 'middleware',
+    /**
+   * The layer for the instrumentation hooks.
+   */ instrument: 'instrument',
+    /**
+   * The layer for assets on the edge.
+   */ edgeAsset: 'edge-asset',
+    /**
+   * The browser client bundle layer for App directory.
+   */ appPagesBrowser: 'app-pages-browser',
+    /**
+   * The browser client bundle layer for Pages directory.
+   */ pagesDirBrowser: 'pages-dir-browser',
+    /**
+   * The Edge Lite bundle layer for Pages directory.
+   */ pagesDirEdge: 'pages-dir-edge',
+    /**
+   * The Node.js bundle layer for Pages directory.
+   */ pagesDirNode: 'pages-dir-node'
+};
+const WEBPACK_LAYERS = {
+    ...WEBPACK_LAYERS_NAMES,
+    GROUP: {
+        builtinReact: [
+            WEBPACK_LAYERS_NAMES.reactServerComponents,
+            WEBPACK_LAYERS_NAMES.actionBrowser
+        ],
+        serverOnly: [
+            WEBPACK_LAYERS_NAMES.reactServerComponents,
+            WEBPACK_LAYERS_NAMES.actionBrowser,
+            WEBPACK_LAYERS_NAMES.instrument,
+            WEBPACK_LAYERS_NAMES.middleware
+        ],
+        neutralTarget: [
+            // pages api
+            WEBPACK_LAYERS_NAMES.apiNode,
+            WEBPACK_LAYERS_NAMES.apiEdge
+        ],
+        clientOnly: [
+            WEBPACK_LAYERS_NAMES.serverSideRendering,
+            WEBPACK_LAYERS_NAMES.appPagesBrowser
+        ],
+        bundled: [
+            WEBPACK_LAYERS_NAMES.reactServerComponents,
+            WEBPACK_LAYERS_NAMES.actionBrowser,
+            WEBPACK_LAYERS_NAMES.serverSideRendering,
+            WEBPACK_LAYERS_NAMES.appPagesBrowser,
+            WEBPACK_LAYERS_NAMES.shared,
+            WEBPACK_LAYERS_NAMES.instrument,
+            WEBPACK_LAYERS_NAMES.middleware
+        ],
+        appPages: [
+            // app router pages and layouts
+            WEBPACK_LAYERS_NAMES.reactServerComponents,
+            WEBPACK_LAYERS_NAMES.serverSideRendering,
+            WEBPACK_LAYERS_NAMES.appPagesBrowser,
+            WEBPACK_LAYERS_NAMES.actionBrowser
+        ]
+    }
+};
+const WEBPACK_RESOURCE_QUERIES = {
+    edgeSSREntry: '__next_edge_ssr_entry__',
+    metadata: '__next_metadata__',
+    metadataRoute: '__next_metadata_route__',
+    metadataImageMeta: '__next_metadata_image_meta__'
+};
+}),
+"[project]/node_modules/next/dist/server/web/utils.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+0 && (module.exports = {
+    fromNodeOutgoingHttpHeaders: null,
+    normalizeNextQueryParam: null,
+    splitCookiesString: null,
+    toNodeOutgoingHttpHeaders: null,
+    validateURL: null
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: all[name]
+    });
+}
+_export(exports, {
+    fromNodeOutgoingHttpHeaders: function() {
+        return fromNodeOutgoingHttpHeaders;
+    },
+    normalizeNextQueryParam: function() {
+        return normalizeNextQueryParam;
+    },
+    splitCookiesString: function() {
+        return splitCookiesString;
+    },
+    toNodeOutgoingHttpHeaders: function() {
+        return toNodeOutgoingHttpHeaders;
+    },
+    validateURL: function() {
+        return validateURL;
+    }
+});
+const _constants = __turbopack_context__.r("[project]/node_modules/next/dist/lib/constants.js [app-route] (ecmascript)");
+function fromNodeOutgoingHttpHeaders(nodeHeaders) {
+    const headers = new Headers();
+    for (let [key, value] of Object.entries(nodeHeaders)){
+        const values = Array.isArray(value) ? value : [
+            value
+        ];
+        for (let v of values){
+            if (typeof v === 'undefined') continue;
+            if (typeof v === 'number') {
+                v = v.toString();
+            }
+            headers.append(key, v);
+        }
+    }
+    return headers;
+}
+function splitCookiesString(cookiesString) {
+    var cookiesStrings = [];
+    var pos = 0;
+    var start;
+    var ch;
+    var lastComma;
+    var nextStart;
+    var cookiesSeparatorFound;
+    function skipWhitespace() {
+        while(pos < cookiesString.length && /\s/.test(cookiesString.charAt(pos))){
+            pos += 1;
+        }
+        return pos < cookiesString.length;
+    }
+    function notSpecialChar() {
+        ch = cookiesString.charAt(pos);
+        return ch !== '=' && ch !== ';' && ch !== ',';
+    }
+    while(pos < cookiesString.length){
+        start = pos;
+        cookiesSeparatorFound = false;
+        while(skipWhitespace()){
+            ch = cookiesString.charAt(pos);
+            if (ch === ',') {
+                // ',' is a cookie separator if we have later first '=', not ';' or ','
+                lastComma = pos;
+                pos += 1;
+                skipWhitespace();
+                nextStart = pos;
+                while(pos < cookiesString.length && notSpecialChar()){
+                    pos += 1;
+                }
+                // currently special character
+                if (pos < cookiesString.length && cookiesString.charAt(pos) === '=') {
+                    // we found cookies separator
+                    cookiesSeparatorFound = true;
+                    // pos is inside the next cookie, so back up and return it.
+                    pos = nextStart;
+                    cookiesStrings.push(cookiesString.substring(start, lastComma));
+                    start = pos;
+                } else {
+                    // in param ',' or param separator ';',
+                    // we continue from that comma
+                    pos = lastComma + 1;
+                }
+            } else {
+                pos += 1;
+            }
+        }
+        if (!cookiesSeparatorFound || pos >= cookiesString.length) {
+            cookiesStrings.push(cookiesString.substring(start, cookiesString.length));
+        }
+    }
+    return cookiesStrings;
+}
+function toNodeOutgoingHttpHeaders(headers) {
+    const nodeHeaders = {};
+    const cookies = [];
+    if (headers) {
+        for (const [key, value] of headers.entries()){
+            if (key.toLowerCase() === 'set-cookie') {
+                // We may have gotten a comma joined string of cookies, or multiple
+                // set-cookie headers. We need to merge them into one header array
+                // to represent all the cookies.
+                cookies.push(...splitCookiesString(value));
+                nodeHeaders[key] = cookies.length === 1 ? cookies[0] : cookies;
+            } else {
+                nodeHeaders[key] = value;
+            }
+        }
+    }
+    return nodeHeaders;
+}
+function validateURL(url) {
+    try {
+        return String(new URL(String(url)));
+    } catch (error) {
+        throw Object.defineProperty(new Error(`URL is malformed "${String(url)}". Please use only absolute URLs - https://nextjs.org/docs/messages/middleware-relative-urls`, {
+            cause: error
+        }), "__NEXT_ERROR_CODE", {
+            value: "E61",
+            enumerable: false,
+            configurable: true
+        });
+    }
+}
+function normalizeNextQueryParam(key) {
+    const prefixes = [
+        _constants.NEXT_QUERY_PARAM_PREFIX,
+        _constants.NEXT_INTERCEPTION_MARKER_PREFIX
+    ];
+    for (const prefix of prefixes){
+        if (key !== prefix && key.startsWith(prefix)) {
+            return key.substring(prefix.length);
+        }
+    }
+    return null;
+}
+}),
+"[project]/node_modules/next/dist/server/web/error.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+0 && (module.exports = {
+    PageSignatureError: null,
+    RemovedPageError: null,
+    RemovedUAError: null
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: all[name]
+    });
+}
+_export(exports, {
+    PageSignatureError: function() {
+        return PageSignatureError;
+    },
+    RemovedPageError: function() {
+        return RemovedPageError;
+    },
+    RemovedUAError: function() {
+        return RemovedUAError;
+    }
+});
+class PageSignatureError extends Error {
+    constructor({ page }){
+        super(`The middleware "${page}" accepts an async API directly with the form:
+  
+  export function middleware(request, event) {
+    return NextResponse.redirect('/new-location')
+  }
+  
+  Read more: https://nextjs.org/docs/messages/middleware-new-signature
+  `);
+    }
+}
+class RemovedPageError extends Error {
+    constructor(){
+        super(`The request.page has been deprecated in favour of \`URLPattern\`.
+  Read more: https://nextjs.org/docs/messages/middleware-request-page
+  `);
+    }
+}
+class RemovedUAError extends Error {
+    constructor(){
+        super(`The request.ua has been removed in favour of \`userAgent\` function.
+  Read more: https://nextjs.org/docs/messages/middleware-parse-user-agent
+  `);
+    }
+}
+}),
+"[project]/node_modules/next/dist/compiled/@edge-runtime/cookies/index.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all)=>{
+    for(var name in all)__defProp(target, name, {
+        get: all[name],
+        enumerable: true
+    });
+};
+var __copyProps = (to, from, except, desc)=>{
+    if (from && typeof from === "object" || typeof from === "function") {
+        for (let key of __getOwnPropNames(from))if (!__hasOwnProp.call(to, key) && key !== except) __defProp(to, key, {
+            get: ()=>from[key],
+            enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable
+        });
+    }
+    return to;
+};
+var __toCommonJS = (mod)=>__copyProps(__defProp({}, "__esModule", {
+        value: true
+    }), mod);
+// src/index.ts
+var src_exports = {};
+__export(src_exports, {
+    RequestCookies: ()=>RequestCookies,
+    ResponseCookies: ()=>ResponseCookies,
+    parseCookie: ()=>parseCookie,
+    parseSetCookie: ()=>parseSetCookie,
+    stringifyCookie: ()=>stringifyCookie
+});
+module.exports = __toCommonJS(src_exports);
+// src/serialize.ts
+function stringifyCookie(c) {
+    var _a;
+    const attrs = [
+        "path" in c && c.path && `Path=${c.path}`,
+        "expires" in c && (c.expires || c.expires === 0) && `Expires=${(typeof c.expires === "number" ? new Date(c.expires) : c.expires).toUTCString()}`,
+        "maxAge" in c && typeof c.maxAge === "number" && `Max-Age=${c.maxAge}`,
+        "domain" in c && c.domain && `Domain=${c.domain}`,
+        "secure" in c && c.secure && "Secure",
+        "httpOnly" in c && c.httpOnly && "HttpOnly",
+        "sameSite" in c && c.sameSite && `SameSite=${c.sameSite}`,
+        "partitioned" in c && c.partitioned && "Partitioned",
+        "priority" in c && c.priority && `Priority=${c.priority}`
+    ].filter(Boolean);
+    const stringified = `${c.name}=${encodeURIComponent((_a = c.value) != null ? _a : "")}`;
+    return attrs.length === 0 ? stringified : `${stringified}; ${attrs.join("; ")}`;
+}
+function parseCookie(cookie) {
+    const map = /* @__PURE__ */ new Map();
+    for (const pair of cookie.split(/; */)){
+        if (!pair) continue;
+        const splitAt = pair.indexOf("=");
+        if (splitAt === -1) {
+            map.set(pair, "true");
+            continue;
+        }
+        const [key, value] = [
+            pair.slice(0, splitAt),
+            pair.slice(splitAt + 1)
+        ];
+        try {
+            map.set(key, decodeURIComponent(value != null ? value : "true"));
+        } catch  {}
+    }
+    return map;
+}
+function parseSetCookie(setCookie) {
+    if (!setCookie) {
+        return void 0;
+    }
+    const [[name, value], ...attributes] = parseCookie(setCookie);
+    const { domain, expires, httponly, maxage, path, samesite, secure, partitioned, priority } = Object.fromEntries(attributes.map(([key, value2])=>[
+            key.toLowerCase().replace(/-/g, ""),
+            value2
+        ]));
+    const cookie = {
+        name,
+        value: decodeURIComponent(value),
+        domain,
+        ...expires && {
+            expires: new Date(expires)
+        },
+        ...httponly && {
+            httpOnly: true
+        },
+        ...typeof maxage === "string" && {
+            maxAge: Number(maxage)
+        },
+        path,
+        ...samesite && {
+            sameSite: parseSameSite(samesite)
+        },
+        ...secure && {
+            secure: true
+        },
+        ...priority && {
+            priority: parsePriority(priority)
+        },
+        ...partitioned && {
+            partitioned: true
+        }
+    };
+    return compact(cookie);
+}
+function compact(t) {
+    const newT = {};
+    for(const key in t){
+        if (t[key]) {
+            newT[key] = t[key];
+        }
+    }
+    return newT;
+}
+var SAME_SITE = [
+    "strict",
+    "lax",
+    "none"
+];
+function parseSameSite(string) {
+    string = string.toLowerCase();
+    return SAME_SITE.includes(string) ? string : void 0;
+}
+var PRIORITY = [
+    "low",
+    "medium",
+    "high"
+];
+function parsePriority(string) {
+    string = string.toLowerCase();
+    return PRIORITY.includes(string) ? string : void 0;
+}
+function splitCookiesString(cookiesString) {
+    if (!cookiesString) return [];
+    var cookiesStrings = [];
+    var pos = 0;
+    var start;
+    var ch;
+    var lastComma;
+    var nextStart;
+    var cookiesSeparatorFound;
+    function skipWhitespace() {
+        while(pos < cookiesString.length && /\s/.test(cookiesString.charAt(pos))){
+            pos += 1;
+        }
+        return pos < cookiesString.length;
+    }
+    function notSpecialChar() {
+        ch = cookiesString.charAt(pos);
+        return ch !== "=" && ch !== ";" && ch !== ",";
+    }
+    while(pos < cookiesString.length){
+        start = pos;
+        cookiesSeparatorFound = false;
+        while(skipWhitespace()){
+            ch = cookiesString.charAt(pos);
+            if (ch === ",") {
+                lastComma = pos;
+                pos += 1;
+                skipWhitespace();
+                nextStart = pos;
+                while(pos < cookiesString.length && notSpecialChar()){
+                    pos += 1;
+                }
+                if (pos < cookiesString.length && cookiesString.charAt(pos) === "=") {
+                    cookiesSeparatorFound = true;
+                    pos = nextStart;
+                    cookiesStrings.push(cookiesString.substring(start, lastComma));
+                    start = pos;
+                } else {
+                    pos = lastComma + 1;
+                }
+            } else {
+                pos += 1;
+            }
+        }
+        if (!cookiesSeparatorFound || pos >= cookiesString.length) {
+            cookiesStrings.push(cookiesString.substring(start, cookiesString.length));
+        }
+    }
+    return cookiesStrings;
+}
+// src/request-cookies.ts
+var RequestCookies = class {
+    constructor(requestHeaders){
+        /** @internal */ this._parsed = /* @__PURE__ */ new Map();
+        this._headers = requestHeaders;
+        const header = requestHeaders.get("cookie");
+        if (header) {
+            const parsed = parseCookie(header);
+            for (const [name, value] of parsed){
+                this._parsed.set(name, {
+                    name,
+                    value
+                });
+            }
+        }
+    }
+    [Symbol.iterator]() {
+        return this._parsed[Symbol.iterator]();
+    }
+    /**
+   * The amount of cookies received from the client
+   */ get size() {
+        return this._parsed.size;
+    }
+    get(...args) {
+        const name = typeof args[0] === "string" ? args[0] : args[0].name;
+        return this._parsed.get(name);
+    }
+    getAll(...args) {
+        var _a;
+        const all = Array.from(this._parsed);
+        if (!args.length) {
+            return all.map(([_, value])=>value);
+        }
+        const name = typeof args[0] === "string" ? args[0] : (_a = args[0]) == null ? void 0 : _a.name;
+        return all.filter(([n])=>n === name).map(([_, value])=>value);
+    }
+    has(name) {
+        return this._parsed.has(name);
+    }
+    set(...args) {
+        const [name, value] = args.length === 1 ? [
+            args[0].name,
+            args[0].value
+        ] : args;
+        const map = this._parsed;
+        map.set(name, {
+            name,
+            value
+        });
+        this._headers.set("cookie", Array.from(map).map(([_, value2])=>stringifyCookie(value2)).join("; "));
+        return this;
+    }
+    /**
+   * Delete the cookies matching the passed name or names in the request.
+   */ delete(names) {
+        const map = this._parsed;
+        const result = !Array.isArray(names) ? map.delete(names) : names.map((name)=>map.delete(name));
+        this._headers.set("cookie", Array.from(map).map(([_, value])=>stringifyCookie(value)).join("; "));
+        return result;
+    }
+    /**
+   * Delete all the cookies in the cookies in the request.
+   */ clear() {
+        this.delete(Array.from(this._parsed.keys()));
+        return this;
+    }
+    /**
+   * Format the cookies in the request as a string for logging
+   */ [Symbol.for("edge-runtime.inspect.custom")]() {
+        return `RequestCookies ${JSON.stringify(Object.fromEntries(this._parsed))}`;
+    }
+    toString() {
+        return [
+            ...this._parsed.values()
+        ].map((v)=>`${v.name}=${encodeURIComponent(v.value)}`).join("; ");
+    }
+};
+// src/response-cookies.ts
+var ResponseCookies = class {
+    constructor(responseHeaders){
+        /** @internal */ this._parsed = /* @__PURE__ */ new Map();
+        var _a, _b, _c;
+        this._headers = responseHeaders;
+        const setCookie = (_c = (_b = (_a = responseHeaders.getSetCookie) == null ? void 0 : _a.call(responseHeaders)) != null ? _b : responseHeaders.get("set-cookie")) != null ? _c : [];
+        const cookieStrings = Array.isArray(setCookie) ? setCookie : splitCookiesString(setCookie);
+        for (const cookieString of cookieStrings){
+            const parsed = parseSetCookie(cookieString);
+            if (parsed) this._parsed.set(parsed.name, parsed);
+        }
+    }
+    /**
+   * {@link https://wicg.github.io/cookie-store/#CookieStore-get CookieStore#get} without the Promise.
+   */ get(...args) {
+        const key = typeof args[0] === "string" ? args[0] : args[0].name;
+        return this._parsed.get(key);
+    }
+    /**
+   * {@link https://wicg.github.io/cookie-store/#CookieStore-getAll CookieStore#getAll} without the Promise.
+   */ getAll(...args) {
+        var _a;
+        const all = Array.from(this._parsed.values());
+        if (!args.length) {
+            return all;
+        }
+        const key = typeof args[0] === "string" ? args[0] : (_a = args[0]) == null ? void 0 : _a.name;
+        return all.filter((c)=>c.name === key);
+    }
+    has(name) {
+        return this._parsed.has(name);
+    }
+    /**
+   * {@link https://wicg.github.io/cookie-store/#CookieStore-set CookieStore#set} without the Promise.
+   */ set(...args) {
+        const [name, value, cookie] = args.length === 1 ? [
+            args[0].name,
+            args[0].value,
+            args[0]
+        ] : args;
+        const map = this._parsed;
+        map.set(name, normalizeCookie({
+            name,
+            value,
+            ...cookie
+        }));
+        replace(map, this._headers);
+        return this;
+    }
+    /**
+   * {@link https://wicg.github.io/cookie-store/#CookieStore-delete CookieStore#delete} without the Promise.
+   */ delete(...args) {
+        const [name, options] = typeof args[0] === "string" ? [
+            args[0]
+        ] : [
+            args[0].name,
+            args[0]
+        ];
+        return this.set({
+            ...options,
+            name,
+            value: "",
+            expires: /* @__PURE__ */ new Date(0)
+        });
+    }
+    [Symbol.for("edge-runtime.inspect.custom")]() {
+        return `ResponseCookies ${JSON.stringify(Object.fromEntries(this._parsed))}`;
+    }
+    toString() {
+        return [
+            ...this._parsed.values()
+        ].map(stringifyCookie).join("; ");
+    }
+};
+function replace(bag, headers) {
+    headers.delete("set-cookie");
+    for (const [, value] of bag){
+        const serialized = stringifyCookie(value);
+        headers.append("set-cookie", serialized);
+    }
+}
+function normalizeCookie(cookie = {
+    name: "",
+    value: ""
+}) {
+    if (typeof cookie.expires === "number") {
+        cookie.expires = new Date(cookie.expires);
+    }
+    if (cookie.maxAge) {
+        cookie.expires = new Date(Date.now() + cookie.maxAge * 1e3);
+    }
+    if (cookie.path === null || cookie.path === void 0) {
+        cookie.path = "/";
+    }
+    return cookie;
+}
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+    RequestCookies,
+    ResponseCookies,
+    parseCookie,
+    parseSetCookie,
+    stringifyCookie
+});
+}),
+"[project]/node_modules/next/dist/server/web/spec-extension/cookies.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+0 && (module.exports = {
+    RequestCookies: null,
+    ResponseCookies: null,
+    stringifyCookie: null
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: all[name]
+    });
+}
+_export(exports, {
+    RequestCookies: function() {
+        return _cookies.RequestCookies;
+    },
+    ResponseCookies: function() {
+        return _cookies.ResponseCookies;
+    },
+    stringifyCookie: function() {
+        return _cookies.stringifyCookie;
+    }
+});
+const _cookies = __turbopack_context__.r("[project]/node_modules/next/dist/compiled/@edge-runtime/cookies/index.js [app-route] (ecmascript)");
+}),
+"[project]/node_modules/next/dist/server/web/spec-extension/request.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+0 && (module.exports = {
+    INTERNALS: null,
+    NextRequest: null
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: all[name]
+    });
+}
+_export(exports, {
+    INTERNALS: function() {
+        return INTERNALS;
+    },
+    NextRequest: function() {
+        return NextRequest;
+    }
+});
+const _nexturl = __turbopack_context__.r("[project]/node_modules/next/dist/server/web/next-url.js [app-route] (ecmascript)");
+const _utils = __turbopack_context__.r("[project]/node_modules/next/dist/server/web/utils.js [app-route] (ecmascript)");
+const _error = __turbopack_context__.r("[project]/node_modules/next/dist/server/web/error.js [app-route] (ecmascript)");
+const _cookies = __turbopack_context__.r("[project]/node_modules/next/dist/server/web/spec-extension/cookies.js [app-route] (ecmascript)");
+const INTERNALS = Symbol('internal request');
+class NextRequest extends Request {
+    constructor(input, init = {}){
+        const url = typeof input !== 'string' && 'url' in input ? input.url : String(input);
+        (0, _utils.validateURL)(url);
+        // node Request instance requires duplex option when a body
+        // is present or it errors, we don't handle this for
+        // Request being passed in since it would have already
+        // errored if this wasn't configured
+        if ("TURBOPACK compile-time truthy", 1) {
+            if (init.body && init.duplex !== 'half') {
+                init.duplex = 'half';
+            }
+        }
+        if (input instanceof Request) super(input, init);
+        else super(url, init);
+        const nextUrl = new _nexturl.NextURL(url, {
+            headers: (0, _utils.toNodeOutgoingHttpHeaders)(this.headers),
+            nextConfig: init.nextConfig
+        });
+        this[INTERNALS] = {
+            cookies: new _cookies.RequestCookies(this.headers),
+            nextUrl,
+            url: ("TURBOPACK compile-time falsy", 0) ? "TURBOPACK unreachable" : nextUrl.toString()
+        };
+    }
+    [Symbol.for('edge-runtime.inspect.custom')]() {
+        return {
+            cookies: this.cookies,
+            nextUrl: this.nextUrl,
+            url: this.url,
+            // rest of props come from Request
+            bodyUsed: this.bodyUsed,
+            cache: this.cache,
+            credentials: this.credentials,
+            destination: this.destination,
+            headers: Object.fromEntries(this.headers),
+            integrity: this.integrity,
+            keepalive: this.keepalive,
+            method: this.method,
+            mode: this.mode,
+            redirect: this.redirect,
+            referrer: this.referrer,
+            referrerPolicy: this.referrerPolicy,
+            signal: this.signal
+        };
+    }
+    get cookies() {
+        return this[INTERNALS].cookies;
+    }
+    get nextUrl() {
+        return this[INTERNALS].nextUrl;
+    }
+    /**
+   * @deprecated
+   * `page` has been deprecated in favour of `URLPattern`.
+   * Read more: https://nextjs.org/docs/messages/middleware-request-page
+   */ get page() {
+        throw new _error.RemovedPageError();
+    }
+    /**
+   * @deprecated
+   * `ua` has been removed in favour of \`userAgent\` function.
+   * Read more: https://nextjs.org/docs/messages/middleware-parse-user-agent
+   */ get ua() {
+        throw new _error.RemovedUAError();
+    }
+    get url() {
+        return this[INTERNALS].url;
+    }
+}
+}),
+"[project]/node_modules/next/dist/server/web/spec-extension/adapters/reflect.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "ReflectAdapter", {
+    enumerable: true,
+    get: function() {
+        return ReflectAdapter;
+    }
+});
+class ReflectAdapter {
+    static get(target, prop, receiver) {
+        const value = Reflect.get(target, prop, receiver);
+        if (typeof value === 'function') {
+            return value.bind(target);
+        }
+        return value;
+    }
+    static set(target, prop, value, receiver) {
+        return Reflect.set(target, prop, value, receiver);
+    }
+    static has(target, prop) {
+        return Reflect.has(target, prop);
+    }
+    static deleteProperty(target, prop) {
+        return Reflect.deleteProperty(target, prop);
+    }
+}
+}),
+"[project]/node_modules/next/dist/server/web/spec-extension/response.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "NextResponse", {
+    enumerable: true,
+    get: function() {
+        return NextResponse;
+    }
+});
+const _cookies = __turbopack_context__.r("[project]/node_modules/next/dist/server/web/spec-extension/cookies.js [app-route] (ecmascript)");
+const _nexturl = __turbopack_context__.r("[project]/node_modules/next/dist/server/web/next-url.js [app-route] (ecmascript)");
+const _utils = __turbopack_context__.r("[project]/node_modules/next/dist/server/web/utils.js [app-route] (ecmascript)");
+const _reflect = __turbopack_context__.r("[project]/node_modules/next/dist/server/web/spec-extension/adapters/reflect.js [app-route] (ecmascript)");
+const _cookies1 = __turbopack_context__.r("[project]/node_modules/next/dist/server/web/spec-extension/cookies.js [app-route] (ecmascript)");
+const INTERNALS = Symbol('internal response');
+const REDIRECTS = new Set([
+    301,
+    302,
+    303,
+    307,
+    308
+]);
+function handleMiddlewareField(init, headers) {
+    var _init_request;
+    if (init == null ? void 0 : (_init_request = init.request) == null ? void 0 : _init_request.headers) {
+        if (!(init.request.headers instanceof Headers)) {
+            throw Object.defineProperty(new Error('request.headers must be an instance of Headers'), "__NEXT_ERROR_CODE", {
+                value: "E119",
+                enumerable: false,
+                configurable: true
+            });
+        }
+        const keys = [];
+        for (const [key, value] of init.request.headers){
+            headers.set('x-middleware-request-' + key, value);
+            keys.push(key);
+        }
+        headers.set('x-middleware-override-headers', keys.join(','));
+    }
+}
+class NextResponse extends Response {
+    constructor(body, init = {}){
+        super(body, init);
+        const headers = this.headers;
+        const cookies = new _cookies1.ResponseCookies(headers);
+        const cookiesProxy = new Proxy(cookies, {
+            get (target, prop, receiver) {
+                switch(prop){
+                    case 'delete':
+                    case 'set':
+                        {
+                            return (...args)=>{
+                                const result = Reflect.apply(target[prop], target, args);
+                                const newHeaders = new Headers(headers);
+                                if (result instanceof _cookies1.ResponseCookies) {
+                                    headers.set('x-middleware-set-cookie', result.getAll().map((cookie)=>(0, _cookies.stringifyCookie)(cookie)).join(','));
+                                }
+                                handleMiddlewareField(init, newHeaders);
+                                return result;
+                            };
+                        }
+                    default:
+                        return _reflect.ReflectAdapter.get(target, prop, receiver);
+                }
+            }
+        });
+        this[INTERNALS] = {
+            cookies: cookiesProxy,
+            url: init.url ? new _nexturl.NextURL(init.url, {
+                headers: (0, _utils.toNodeOutgoingHttpHeaders)(headers),
+                nextConfig: init.nextConfig
+            }) : undefined
+        };
+    }
+    [Symbol.for('edge-runtime.inspect.custom')]() {
+        return {
+            cookies: this.cookies,
+            url: this.url,
+            // rest of props come from Response
+            body: this.body,
+            bodyUsed: this.bodyUsed,
+            headers: Object.fromEntries(this.headers),
+            ok: this.ok,
+            redirected: this.redirected,
+            status: this.status,
+            statusText: this.statusText,
+            type: this.type
+        };
+    }
+    get cookies() {
+        return this[INTERNALS].cookies;
+    }
+    static json(body, init) {
+        const response = Response.json(body, init);
+        return new NextResponse(response.body, response);
+    }
+    static redirect(url, init) {
+        const status = typeof init === 'number' ? init : (init == null ? void 0 : init.status) ?? 307;
+        if (!REDIRECTS.has(status)) {
+            throw Object.defineProperty(new RangeError('Failed to execute "redirect" on "response": Invalid status code'), "__NEXT_ERROR_CODE", {
+                value: "E529",
+                enumerable: false,
+                configurable: true
+            });
+        }
+        const initObj = typeof init === 'object' ? init : {};
+        const headers = new Headers(initObj == null ? void 0 : initObj.headers);
+        headers.set('Location', (0, _utils.validateURL)(url));
+        return new NextResponse(null, {
+            ...initObj,
+            headers,
+            status
+        });
+    }
+    static rewrite(destination, init) {
+        const headers = new Headers(init == null ? void 0 : init.headers);
+        headers.set('x-middleware-rewrite', (0, _utils.validateURL)(destination));
+        handleMiddlewareField(init, headers);
+        return new NextResponse(null, {
+            ...init,
+            headers
+        });
+    }
+    static next(init) {
+        const headers = new Headers(init == null ? void 0 : init.headers);
+        headers.set('x-middleware-next', '1');
+        handleMiddlewareField(init, headers);
+        return new NextResponse(null, {
+            ...init,
+            headers
+        });
+    }
+}
+}),
+"[project]/node_modules/next/dist/server/web/spec-extension/image-response.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+/**
+ * @deprecated ImageResponse moved from "next/server" to "next/og" since Next.js 14, please import from "next/og" instead.
+ * Migration with codemods: https://nextjs.org/docs/app/building-your-application/upgrading/codemods#next-og-import
+ */ Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "ImageResponse", {
+    enumerable: true,
+    get: function() {
+        return ImageResponse;
+    }
+});
+function ImageResponse() {
+    throw Object.defineProperty(new Error('ImageResponse moved from "next/server" to "next/og" since Next.js 14, please import from "next/og" instead'), "__NEXT_ERROR_CODE", {
+        value: "E183",
+        enumerable: false,
+        configurable: true
+    });
+}
+}),
+"[project]/node_modules/next/dist/compiled/ua-parser-js/ua-parser.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+
+(()=>{
+    var i = {
+        226: function(i, e) {
+            (function(o, a) {
+                "use strict";
+                var r = "1.0.35", t = "", n = "?", s = "function", b = "undefined", w = "object", l = "string", d = "major", c = "model", u = "name", p = "type", m = "vendor", f = "version", h = "architecture", v = "console", g = "mobile", k = "tablet", x = "smarttv", _ = "wearable", y = "embedded", q = 350;
+                var T = "Amazon", S = "Apple", z = "ASUS", N = "BlackBerry", A = "Browser", C = "Chrome", E = "Edge", O = "Firefox", U = "Google", j = "Huawei", P = "LG", R = "Microsoft", M = "Motorola", B = "Opera", V = "Samsung", D = "Sharp", I = "Sony", W = "Viera", F = "Xiaomi", G = "Zebra", H = "Facebook", L = "Chromium OS", Z = "Mac OS";
+                var extend = function(i, e) {
+                    var o = {};
+                    for(var a in i){
+                        if (e[a] && e[a].length % 2 === 0) {
+                            o[a] = e[a].concat(i[a]);
+                        } else {
+                            o[a] = i[a];
+                        }
+                    }
+                    return o;
+                }, enumerize = function(i) {
+                    var e = {};
+                    for(var o = 0; o < i.length; o++){
+                        e[i[o].toUpperCase()] = i[o];
+                    }
+                    return e;
+                }, has = function(i, e) {
+                    return typeof i === l ? lowerize(e).indexOf(lowerize(i)) !== -1 : false;
+                }, lowerize = function(i) {
+                    return i.toLowerCase();
+                }, majorize = function(i) {
+                    return typeof i === l ? i.replace(/[^\d\.]/g, t).split(".")[0] : a;
+                }, trim = function(i, e) {
+                    if (typeof i === l) {
+                        i = i.replace(/^\s\s*/, t);
+                        return typeof e === b ? i : i.substring(0, q);
+                    }
+                };
+                var rgxMapper = function(i, e) {
+                    var o = 0, r, t, n, b, l, d;
+                    while(o < e.length && !l){
+                        var c = e[o], u = e[o + 1];
+                        r = t = 0;
+                        while(r < c.length && !l){
+                            if (!c[r]) {
+                                break;
+                            }
+                            l = c[r++].exec(i);
+                            if (!!l) {
+                                for(n = 0; n < u.length; n++){
+                                    d = l[++t];
+                                    b = u[n];
+                                    if (typeof b === w && b.length > 0) {
+                                        if (b.length === 2) {
+                                            if (typeof b[1] == s) {
+                                                this[b[0]] = b[1].call(this, d);
+                                            } else {
+                                                this[b[0]] = b[1];
+                                            }
+                                        } else if (b.length === 3) {
+                                            if (typeof b[1] === s && !(b[1].exec && b[1].test)) {
+                                                this[b[0]] = d ? b[1].call(this, d, b[2]) : a;
+                                            } else {
+                                                this[b[0]] = d ? d.replace(b[1], b[2]) : a;
+                                            }
+                                        } else if (b.length === 4) {
+                                            this[b[0]] = d ? b[3].call(this, d.replace(b[1], b[2])) : a;
+                                        }
+                                    } else {
+                                        this[b] = d ? d : a;
+                                    }
+                                }
+                            }
+                        }
+                        o += 2;
+                    }
+                }, strMapper = function(i, e) {
+                    for(var o in e){
+                        if (typeof e[o] === w && e[o].length > 0) {
+                            for(var r = 0; r < e[o].length; r++){
+                                if (has(e[o][r], i)) {
+                                    return o === n ? a : o;
+                                }
+                            }
+                        } else if (has(e[o], i)) {
+                            return o === n ? a : o;
+                        }
+                    }
+                    return i;
+                };
+                var $ = {
+                    "1.0": "/8",
+                    1.2: "/1",
+                    1.3: "/3",
+                    "2.0": "/412",
+                    "2.0.2": "/416",
+                    "2.0.3": "/417",
+                    "2.0.4": "/419",
+                    "?": "/"
+                }, X = {
+                    ME: "4.90",
+                    "NT 3.11": "NT3.51",
+                    "NT 4.0": "NT4.0",
+                    2e3: "NT 5.0",
+                    XP: [
+                        "NT 5.1",
+                        "NT 5.2"
+                    ],
+                    Vista: "NT 6.0",
+                    7: "NT 6.1",
+                    8: "NT 6.2",
+                    8.1: "NT 6.3",
+                    10: [
+                        "NT 6.4",
+                        "NT 10.0"
+                    ],
+                    RT: "ARM"
+                };
+                var K = {
+                    browser: [
+                        [
+                            /\b(?:crmo|crios)\/([\w\.]+)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                "Chrome"
+                            ]
+                        ],
+                        [
+                            /edg(?:e|ios|a)?\/([\w\.]+)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                "Edge"
+                            ]
+                        ],
+                        [
+                            /(opera mini)\/([-\w\.]+)/i,
+                            /(opera [mobiletab]{3,6})\b.+version\/([-\w\.]+)/i,
+                            /(opera)(?:.+version\/|[\/ ]+)([\w\.]+)/i
+                        ],
+                        [
+                            u,
+                            f
+                        ],
+                        [
+                            /opios[\/ ]+([\w\.]+)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                B + " Mini"
+                            ]
+                        ],
+                        [
+                            /\bopr\/([\w\.]+)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                B
+                            ]
+                        ],
+                        [
+                            /(kindle)\/([\w\.]+)/i,
+                            /(lunascape|maxthon|netfront|jasmine|blazer)[\/ ]?([\w\.]*)/i,
+                            /(avant |iemobile|slim)(?:browser)?[\/ ]?([\w\.]*)/i,
+                            /(ba?idubrowser)[\/ ]?([\w\.]+)/i,
+                            /(?:ms|\()(ie) ([\w\.]+)/i,
+                            /(flock|rockmelt|midori|epiphany|silk|skyfire|bolt|iron|vivaldi|iridium|phantomjs|bowser|quark|qupzilla|falkon|rekonq|puffin|brave|whale(?!.+naver)|qqbrowserlite|qq|duckduckgo)\/([-\w\.]+)/i,
+                            /(heytap|ovi)browser\/([\d\.]+)/i,
+                            /(weibo)__([\d\.]+)/i
+                        ],
+                        [
+                            u,
+                            f
+                        ],
+                        [
+                            /(?:\buc? ?browser|(?:juc.+)ucweb)[\/ ]?([\w\.]+)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                "UC" + A
+                            ]
+                        ],
+                        [
+                            /microm.+\bqbcore\/([\w\.]+)/i,
+                            /\bqbcore\/([\w\.]+).+microm/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                "WeChat(Win) Desktop"
+                            ]
+                        ],
+                        [
+                            /micromessenger\/([\w\.]+)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                "WeChat"
+                            ]
+                        ],
+                        [
+                            /konqueror\/([\w\.]+)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                "Konqueror"
+                            ]
+                        ],
+                        [
+                            /trident.+rv[: ]([\w\.]{1,9})\b.+like gecko/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                "IE"
+                            ]
+                        ],
+                        [
+                            /ya(?:search)?browser\/([\w\.]+)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                "Yandex"
+                            ]
+                        ],
+                        [
+                            /(avast|avg)\/([\w\.]+)/i
+                        ],
+                        [
+                            [
+                                u,
+                                /(.+)/,
+                                "$1 Secure " + A
+                            ],
+                            f
+                        ],
+                        [
+                            /\bfocus\/([\w\.]+)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                O + " Focus"
+                            ]
+                        ],
+                        [
+                            /\bopt\/([\w\.]+)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                B + " Touch"
+                            ]
+                        ],
+                        [
+                            /coc_coc\w+\/([\w\.]+)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                "Coc Coc"
+                            ]
+                        ],
+                        [
+                            /dolfin\/([\w\.]+)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                "Dolphin"
+                            ]
+                        ],
+                        [
+                            /coast\/([\w\.]+)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                B + " Coast"
+                            ]
+                        ],
+                        [
+                            /miuibrowser\/([\w\.]+)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                "MIUI " + A
+                            ]
+                        ],
+                        [
+                            /fxios\/([-\w\.]+)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                O
+                            ]
+                        ],
+                        [
+                            /\bqihu|(qi?ho?o?|360)browser/i
+                        ],
+                        [
+                            [
+                                u,
+                                "360 " + A
+                            ]
+                        ],
+                        [
+                            /(oculus|samsung|sailfish|huawei)browser\/([\w\.]+)/i
+                        ],
+                        [
+                            [
+                                u,
+                                /(.+)/,
+                                "$1 " + A
+                            ],
+                            f
+                        ],
+                        [
+                            /(comodo_dragon)\/([\w\.]+)/i
+                        ],
+                        [
+                            [
+                                u,
+                                /_/g,
+                                " "
+                            ],
+                            f
+                        ],
+                        [
+                            /(electron)\/([\w\.]+) safari/i,
+                            /(tesla)(?: qtcarbrowser|\/(20\d\d\.[-\w\.]+))/i,
+                            /m?(qqbrowser|baiduboxapp|2345Explorer)[\/ ]?([\w\.]+)/i
+                        ],
+                        [
+                            u,
+                            f
+                        ],
+                        [
+                            /(metasr)[\/ ]?([\w\.]+)/i,
+                            /(lbbrowser)/i,
+                            /\[(linkedin)app\]/i
+                        ],
+                        [
+                            u
+                        ],
+                        [
+                            /((?:fban\/fbios|fb_iab\/fb4a)(?!.+fbav)|;fbav\/([\w\.]+);)/i
+                        ],
+                        [
+                            [
+                                u,
+                                H
+                            ],
+                            f
+                        ],
+                        [
+                            /(kakao(?:talk|story))[\/ ]([\w\.]+)/i,
+                            /(naver)\(.*?(\d+\.[\w\.]+).*\)/i,
+                            /safari (line)\/([\w\.]+)/i,
+                            /\b(line)\/([\w\.]+)\/iab/i,
+                            /(chromium|instagram)[\/ ]([-\w\.]+)/i
+                        ],
+                        [
+                            u,
+                            f
+                        ],
+                        [
+                            /\bgsa\/([\w\.]+) .*safari\//i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                "GSA"
+                            ]
+                        ],
+                        [
+                            /musical_ly(?:.+app_?version\/|_)([\w\.]+)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                "TikTok"
+                            ]
+                        ],
+                        [
+                            /headlesschrome(?:\/([\w\.]+)| )/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                C + " Headless"
+                            ]
+                        ],
+                        [
+                            / wv\).+(chrome)\/([\w\.]+)/i
+                        ],
+                        [
+                            [
+                                u,
+                                C + " WebView"
+                            ],
+                            f
+                        ],
+                        [
+                            /droid.+ version\/([\w\.]+)\b.+(?:mobile safari|safari)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                "Android " + A
+                            ]
+                        ],
+                        [
+                            /(chrome|omniweb|arora|[tizenoka]{5} ?browser)\/v?([\w\.]+)/i
+                        ],
+                        [
+                            u,
+                            f
+                        ],
+                        [
+                            /version\/([\w\.\,]+) .*mobile\/\w+ (safari)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                "Mobile Safari"
+                            ]
+                        ],
+                        [
+                            /version\/([\w(\.|\,)]+) .*(mobile ?safari|safari)/i
+                        ],
+                        [
+                            f,
+                            u
+                        ],
+                        [
+                            /webkit.+?(mobile ?safari|safari)(\/[\w\.]+)/i
+                        ],
+                        [
+                            u,
+                            [
+                                f,
+                                strMapper,
+                                $
+                            ]
+                        ],
+                        [
+                            /(webkit|khtml)\/([\w\.]+)/i
+                        ],
+                        [
+                            u,
+                            f
+                        ],
+                        [
+                            /(navigator|netscape\d?)\/([-\w\.]+)/i
+                        ],
+                        [
+                            [
+                                u,
+                                "Netscape"
+                            ],
+                            f
+                        ],
+                        [
+                            /mobile vr; rv:([\w\.]+)\).+firefox/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                O + " Reality"
+                            ]
+                        ],
+                        [
+                            /ekiohf.+(flow)\/([\w\.]+)/i,
+                            /(swiftfox)/i,
+                            /(icedragon|iceweasel|camino|chimera|fennec|maemo browser|minimo|conkeror|klar)[\/ ]?([\w\.\+]+)/i,
+                            /(seamonkey|k-meleon|icecat|iceape|firebird|phoenix|palemoon|basilisk|waterfox)\/([-\w\.]+)$/i,
+                            /(firefox)\/([\w\.]+)/i,
+                            /(mozilla)\/([\w\.]+) .+rv\:.+gecko\/\d+/i,
+                            /(polaris|lynx|dillo|icab|doris|amaya|w3m|netsurf|sleipnir|obigo|mosaic|(?:go|ice|up)[\. ]?browser)[-\/ ]?v?([\w\.]+)/i,
+                            /(links) \(([\w\.]+)/i,
+                            /panasonic;(viera)/i
+                        ],
+                        [
+                            u,
+                            f
+                        ],
+                        [
+                            /(cobalt)\/([\w\.]+)/i
+                        ],
+                        [
+                            u,
+                            [
+                                f,
+                                /master.|lts./,
+                                ""
+                            ]
+                        ]
+                    ],
+                    cpu: [
+                        [
+                            /(?:(amd|x(?:(?:86|64)[-_])?|wow|win)64)[;\)]/i
+                        ],
+                        [
+                            [
+                                h,
+                                "amd64"
+                            ]
+                        ],
+                        [
+                            /(ia32(?=;))/i
+                        ],
+                        [
+                            [
+                                h,
+                                lowerize
+                            ]
+                        ],
+                        [
+                            /((?:i[346]|x)86)[;\)]/i
+                        ],
+                        [
+                            [
+                                h,
+                                "ia32"
+                            ]
+                        ],
+                        [
+                            /\b(aarch64|arm(v?8e?l?|_?64))\b/i
+                        ],
+                        [
+                            [
+                                h,
+                                "arm64"
+                            ]
+                        ],
+                        [
+                            /\b(arm(?:v[67])?ht?n?[fl]p?)\b/i
+                        ],
+                        [
+                            [
+                                h,
+                                "armhf"
+                            ]
+                        ],
+                        [
+                            /windows (ce|mobile); ppc;/i
+                        ],
+                        [
+                            [
+                                h,
+                                "arm"
+                            ]
+                        ],
+                        [
+                            /((?:ppc|powerpc)(?:64)?)(?: mac|;|\))/i
+                        ],
+                        [
+                            [
+                                h,
+                                /ower/,
+                                t,
+                                lowerize
+                            ]
+                        ],
+                        [
+                            /(sun4\w)[;\)]/i
+                        ],
+                        [
+                            [
+                                h,
+                                "sparc"
+                            ]
+                        ],
+                        [
+                            /((?:avr32|ia64(?=;))|68k(?=\))|\barm(?=v(?:[1-7]|[5-7]1)l?|;|eabi)|(?=atmel )avr|(?:irix|mips|sparc)(?:64)?\b|pa-risc)/i
+                        ],
+                        [
+                            [
+                                h,
+                                lowerize
+                            ]
+                        ]
+                    ],
+                    device: [
+                        [
+                            /\b(sch-i[89]0\d|shw-m380s|sm-[ptx]\w{2,4}|gt-[pn]\d{2,4}|sgh-t8[56]9|nexus 10)/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                V
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /\b((?:s[cgp]h|gt|sm)-\w+|sc[g-]?[\d]+a?|galaxy nexus)/i,
+                            /samsung[- ]([-\w]+)/i,
+                            /sec-(sgh\w+)/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                V
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /(?:\/|\()(ip(?:hone|od)[\w, ]*)(?:\/|;)/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                S
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /\((ipad);[-\w\),; ]+apple/i,
+                            /applecoremedia\/[\w\.]+ \((ipad)/i,
+                            /\b(ipad)\d\d?,\d\d?[;\]].+ios/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                S
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /(macintosh);/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                S
+                            ]
+                        ],
+                        [
+                            /\b(sh-?[altvz]?\d\d[a-ekm]?)/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                D
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /\b((?:ag[rs][23]?|bah2?|sht?|btv)-a?[lw]\d{2})\b(?!.+d\/s)/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                j
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /(?:huawei|honor)([-\w ]+)[;\)]/i,
+                            /\b(nexus 6p|\w{2,4}e?-[atu]?[ln][\dx][012359c][adn]?)\b(?!.+d\/s)/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                j
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /\b(poco[\w ]+)(?: bui|\))/i,
+                            /\b; (\w+) build\/hm\1/i,
+                            /\b(hm[-_ ]?note?[_ ]?(?:\d\w)?) bui/i,
+                            /\b(redmi[\-_ ]?(?:note|k)?[\w_ ]+)(?: bui|\))/i,
+                            /\b(mi[-_ ]?(?:a\d|one|one[_ ]plus|note lte|max|cc)?[_ ]?(?:\d?\w?)[_ ]?(?:plus|se|lite)?)(?: bui|\))/i
+                        ],
+                        [
+                            [
+                                c,
+                                /_/g,
+                                " "
+                            ],
+                            [
+                                m,
+                                F
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /\b(mi[-_ ]?(?:pad)(?:[\w_ ]+))(?: bui|\))/i
+                        ],
+                        [
+                            [
+                                c,
+                                /_/g,
+                                " "
+                            ],
+                            [
+                                m,
+                                F
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /; (\w+) bui.+ oppo/i,
+                            /\b(cph[12]\d{3}|p(?:af|c[al]|d\w|e[ar])[mt]\d0|x9007|a101op)\b/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "OPPO"
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /vivo (\w+)(?: bui|\))/i,
+                            /\b(v[12]\d{3}\w?[at])(?: bui|;)/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "Vivo"
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /\b(rmx[12]\d{3})(?: bui|;|\))/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "Realme"
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /\b(milestone|droid(?:[2-4x]| (?:bionic|x2|pro|razr))?:?( 4g)?)\b[\w ]+build\//i,
+                            /\bmot(?:orola)?[- ](\w*)/i,
+                            /((?:moto[\w\(\) ]+|xt\d{3,4}|nexus 6)(?= bui|\)))/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                M
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /\b(mz60\d|xoom[2 ]{0,2}) build\//i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                M
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /((?=lg)?[vl]k\-?\d{3}) bui| 3\.[-\w; ]{10}lg?-([06cv9]{3,4})/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                P
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /(lm(?:-?f100[nv]?|-[\w\.]+)(?= bui|\))|nexus [45])/i,
+                            /\blg[-e;\/ ]+((?!browser|netcast|android tv)\w+)/i,
+                            /\blg-?([\d\w]+) bui/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                P
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /(ideatab[-\w ]+)/i,
+                            /lenovo ?(s[56]000[-\w]+|tab(?:[\w ]+)|yt[-\d\w]{6}|tb[-\d\w]{6})/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "Lenovo"
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /(?:maemo|nokia).*(n900|lumia \d+)/i,
+                            /nokia[-_ ]?([-\w\.]*)/i
+                        ],
+                        [
+                            [
+                                c,
+                                /_/g,
+                                " "
+                            ],
+                            [
+                                m,
+                                "Nokia"
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /(pixel c)\b/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                U
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /droid.+; (pixel[\daxl ]{0,6})(?: bui|\))/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                U
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /droid.+ (a?\d[0-2]{2}so|[c-g]\d{4}|so[-gl]\w+|xq-a\w[4-7][12])(?= bui|\).+chrome\/(?![1-6]{0,1}\d\.))/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                I
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /sony tablet [ps]/i,
+                            /\b(?:sony)?sgp\w+(?: bui|\))/i
+                        ],
+                        [
+                            [
+                                c,
+                                "Xperia Tablet"
+                            ],
+                            [
+                                m,
+                                I
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            / (kb2005|in20[12]5|be20[12][59])\b/i,
+                            /(?:one)?(?:plus)? (a\d0\d\d)(?: b|\))/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "OnePlus"
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /(alexa)webm/i,
+                            /(kf[a-z]{2}wi|aeo[c-r]{2})( bui|\))/i,
+                            /(kf[a-z]+)( bui|\)).+silk\//i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                T
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /((?:sd|kf)[0349hijorstuw]+)( bui|\)).+silk\//i
+                        ],
+                        [
+                            [
+                                c,
+                                /(.+)/g,
+                                "Fire Phone $1"
+                            ],
+                            [
+                                m,
+                                T
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /(playbook);[-\w\),; ]+(rim)/i
+                        ],
+                        [
+                            c,
+                            m,
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /\b((?:bb[a-f]|st[hv])100-\d)/i,
+                            /\(bb10; (\w+)/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                N
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /(?:\b|asus_)(transfo[prime ]{4,10} \w+|eeepc|slider \w+|nexus 7|padfone|p00[cj])/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                z
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            / (z[bes]6[027][012][km][ls]|zenfone \d\w?)\b/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                z
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /(nexus 9)/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "HTC"
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /(htc)[-;_ ]{1,2}([\w ]+(?=\)| bui)|\w+)/i,
+                            /(zte)[- ]([\w ]+?)(?: bui|\/|\))/i,
+                            /(alcatel|geeksphone|nexian|panasonic(?!(?:;|\.))|sony(?!-bra))[-_ ]?([-\w]*)/i
+                        ],
+                        [
+                            m,
+                            [
+                                c,
+                                /_/g,
+                                " "
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /droid.+; ([ab][1-7]-?[0178a]\d\d?)/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "Acer"
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /droid.+; (m[1-5] note) bui/i,
+                            /\bmz-([-\w]{2,})/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "Meizu"
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /(blackberry|benq|palm(?=\-)|sonyericsson|acer|asus|dell|meizu|motorola|polytron)[-_ ]?([-\w]*)/i,
+                            /(hp) ([\w ]+\w)/i,
+                            /(asus)-?(\w+)/i,
+                            /(microsoft); (lumia[\w ]+)/i,
+                            /(lenovo)[-_ ]?([-\w]+)/i,
+                            /(jolla)/i,
+                            /(oppo) ?([\w ]+) bui/i
+                        ],
+                        [
+                            m,
+                            c,
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /(kobo)\s(ereader|touch)/i,
+                            /(archos) (gamepad2?)/i,
+                            /(hp).+(touchpad(?!.+tablet)|tablet)/i,
+                            /(kindle)\/([\w\.]+)/i,
+                            /(nook)[\w ]+build\/(\w+)/i,
+                            /(dell) (strea[kpr\d ]*[\dko])/i,
+                            /(le[- ]+pan)[- ]+(\w{1,9}) bui/i,
+                            /(trinity)[- ]*(t\d{3}) bui/i,
+                            /(gigaset)[- ]+(q\w{1,9}) bui/i,
+                            /(vodafone) ([\w ]+)(?:\)| bui)/i
+                        ],
+                        [
+                            m,
+                            c,
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /(surface duo)/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                R
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /droid [\d\.]+; (fp\du?)(?: b|\))/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "Fairphone"
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /(u304aa)/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "AT&T"
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /\bsie-(\w*)/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "Siemens"
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /\b(rct\w+) b/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "RCA"
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /\b(venue[\d ]{2,7}) b/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "Dell"
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /\b(q(?:mv|ta)\w+) b/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "Verizon"
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /\b(?:barnes[& ]+noble |bn[rt])([\w\+ ]*) b/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "Barnes & Noble"
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /\b(tm\d{3}\w+) b/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "NuVision"
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /\b(k88) b/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "ZTE"
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /\b(nx\d{3}j) b/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "ZTE"
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /\b(gen\d{3}) b.+49h/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "Swiss"
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /\b(zur\d{3}) b/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "Swiss"
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /\b((zeki)?tb.*\b) b/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "Zeki"
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /\b([yr]\d{2}) b/i,
+                            /\b(dragon[- ]+touch |dt)(\w{5}) b/i
+                        ],
+                        [
+                            [
+                                m,
+                                "Dragon Touch"
+                            ],
+                            c,
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /\b(ns-?\w{0,9}) b/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "Insignia"
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /\b((nxa|next)-?\w{0,9}) b/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "NextBook"
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /\b(xtreme\_)?(v(1[045]|2[015]|[3469]0|7[05])) b/i
+                        ],
+                        [
+                            [
+                                m,
+                                "Voice"
+                            ],
+                            c,
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /\b(lvtel\-)?(v1[12]) b/i
+                        ],
+                        [
+                            [
+                                m,
+                                "LvTel"
+                            ],
+                            c,
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /\b(ph-1) /i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "Essential"
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /\b(v(100md|700na|7011|917g).*\b) b/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "Envizen"
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /\b(trio[-\w\. ]+) b/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "MachSpeed"
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /\btu_(1491) b/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "Rotor"
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /(shield[\w ]+) b/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "Nvidia"
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /(sprint) (\w+)/i
+                        ],
+                        [
+                            m,
+                            c,
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /(kin\.[onetw]{3})/i
+                        ],
+                        [
+                            [
+                                c,
+                                /\./g,
+                                " "
+                            ],
+                            [
+                                m,
+                                R
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /droid.+; (cc6666?|et5[16]|mc[239][23]x?|vc8[03]x?)\)/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                G
+                            ],
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /droid.+; (ec30|ps20|tc[2-8]\d[kx])\)/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                G
+                            ],
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /smart-tv.+(samsung)/i
+                        ],
+                        [
+                            m,
+                            [
+                                p,
+                                x
+                            ]
+                        ],
+                        [
+                            /hbbtv.+maple;(\d+)/i
+                        ],
+                        [
+                            [
+                                c,
+                                /^/,
+                                "SmartTV"
+                            ],
+                            [
+                                m,
+                                V
+                            ],
+                            [
+                                p,
+                                x
+                            ]
+                        ],
+                        [
+                            /(nux; netcast.+smarttv|lg (netcast\.tv-201\d|android tv))/i
+                        ],
+                        [
+                            [
+                                m,
+                                P
+                            ],
+                            [
+                                p,
+                                x
+                            ]
+                        ],
+                        [
+                            /(apple) ?tv/i
+                        ],
+                        [
+                            m,
+                            [
+                                c,
+                                S + " TV"
+                            ],
+                            [
+                                p,
+                                x
+                            ]
+                        ],
+                        [
+                            /crkey/i
+                        ],
+                        [
+                            [
+                                c,
+                                C + "cast"
+                            ],
+                            [
+                                m,
+                                U
+                            ],
+                            [
+                                p,
+                                x
+                            ]
+                        ],
+                        [
+                            /droid.+aft(\w)( bui|\))/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                T
+                            ],
+                            [
+                                p,
+                                x
+                            ]
+                        ],
+                        [
+                            /\(dtv[\);].+(aquos)/i,
+                            /(aquos-tv[\w ]+)\)/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                D
+                            ],
+                            [
+                                p,
+                                x
+                            ]
+                        ],
+                        [
+                            /(bravia[\w ]+)( bui|\))/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                I
+                            ],
+                            [
+                                p,
+                                x
+                            ]
+                        ],
+                        [
+                            /(mitv-\w{5}) bui/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                F
+                            ],
+                            [
+                                p,
+                                x
+                            ]
+                        ],
+                        [
+                            /Hbbtv.*(technisat) (.*);/i
+                        ],
+                        [
+                            m,
+                            c,
+                            [
+                                p,
+                                x
+                            ]
+                        ],
+                        [
+                            /\b(roku)[\dx]*[\)\/]((?:dvp-)?[\d\.]*)/i,
+                            /hbbtv\/\d+\.\d+\.\d+ +\([\w\+ ]*; *([\w\d][^;]*);([^;]*)/i
+                        ],
+                        [
+                            [
+                                m,
+                                trim
+                            ],
+                            [
+                                c,
+                                trim
+                            ],
+                            [
+                                p,
+                                x
+                            ]
+                        ],
+                        [
+                            /\b(android tv|smart[- ]?tv|opera tv|tv; rv:)\b/i
+                        ],
+                        [
+                            [
+                                p,
+                                x
+                            ]
+                        ],
+                        [
+                            /(ouya)/i,
+                            /(nintendo) ([wids3utch]+)/i
+                        ],
+                        [
+                            m,
+                            c,
+                            [
+                                p,
+                                v
+                            ]
+                        ],
+                        [
+                            /droid.+; (shield) bui/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "Nvidia"
+                            ],
+                            [
+                                p,
+                                v
+                            ]
+                        ],
+                        [
+                            /(playstation [345portablevi]+)/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                I
+                            ],
+                            [
+                                p,
+                                v
+                            ]
+                        ],
+                        [
+                            /\b(xbox(?: one)?(?!; xbox))[\); ]/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                R
+                            ],
+                            [
+                                p,
+                                v
+                            ]
+                        ],
+                        [
+                            /((pebble))app/i
+                        ],
+                        [
+                            m,
+                            c,
+                            [
+                                p,
+                                _
+                            ]
+                        ],
+                        [
+                            /(watch)(?: ?os[,\/]|\d,\d\/)[\d\.]+/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                S
+                            ],
+                            [
+                                p,
+                                _
+                            ]
+                        ],
+                        [
+                            /droid.+; (glass) \d/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                U
+                            ],
+                            [
+                                p,
+                                _
+                            ]
+                        ],
+                        [
+                            /droid.+; (wt63?0{2,3})\)/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                G
+                            ],
+                            [
+                                p,
+                                _
+                            ]
+                        ],
+                        [
+                            /(quest( 2| pro)?)/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                H
+                            ],
+                            [
+                                p,
+                                _
+                            ]
+                        ],
+                        [
+                            /(tesla)(?: qtcarbrowser|\/[-\w\.]+)/i
+                        ],
+                        [
+                            m,
+                            [
+                                p,
+                                y
+                            ]
+                        ],
+                        [
+                            /(aeobc)\b/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                T
+                            ],
+                            [
+                                p,
+                                y
+                            ]
+                        ],
+                        [
+                            /droid .+?; ([^;]+?)(?: bui|\) applew).+? mobile safari/i
+                        ],
+                        [
+                            c,
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /droid .+?; ([^;]+?)(?: bui|\) applew).+?(?! mobile) safari/i
+                        ],
+                        [
+                            c,
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /\b((tablet|tab)[;\/]|focus\/\d(?!.+mobile))/i
+                        ],
+                        [
+                            [
+                                p,
+                                k
+                            ]
+                        ],
+                        [
+                            /(phone|mobile(?:[;\/]| [ \w\/\.]*safari)|pda(?=.+windows ce))/i
+                        ],
+                        [
+                            [
+                                p,
+                                g
+                            ]
+                        ],
+                        [
+                            /(android[-\w\. ]{0,9});.+buil/i
+                        ],
+                        [
+                            c,
+                            [
+                                m,
+                                "Generic"
+                            ]
+                        ]
+                    ],
+                    engine: [
+                        [
+                            /windows.+ edge\/([\w\.]+)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                E + "HTML"
+                            ]
+                        ],
+                        [
+                            /webkit\/537\.36.+chrome\/(?!27)([\w\.]+)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                "Blink"
+                            ]
+                        ],
+                        [
+                            /(presto)\/([\w\.]+)/i,
+                            /(webkit|trident|netfront|netsurf|amaya|lynx|w3m|goanna)\/([\w\.]+)/i,
+                            /ekioh(flow)\/([\w\.]+)/i,
+                            /(khtml|tasman|links)[\/ ]\(?([\w\.]+)/i,
+                            /(icab)[\/ ]([23]\.[\d\.]+)/i,
+                            /\b(libweb)/i
+                        ],
+                        [
+                            u,
+                            f
+                        ],
+                        [
+                            /rv\:([\w\.]{1,9})\b.+(gecko)/i
+                        ],
+                        [
+                            f,
+                            u
+                        ]
+                    ],
+                    os: [
+                        [
+                            /microsoft (windows) (vista|xp)/i
+                        ],
+                        [
+                            u,
+                            f
+                        ],
+                        [
+                            /(windows) nt 6\.2; (arm)/i,
+                            /(windows (?:phone(?: os)?|mobile))[\/ ]?([\d\.\w ]*)/i,
+                            /(windows)[\/ ]?([ntce\d\. ]+\w)(?!.+xbox)/i
+                        ],
+                        [
+                            u,
+                            [
+                                f,
+                                strMapper,
+                                X
+                            ]
+                        ],
+                        [
+                            /(win(?=3|9|n)|win 9x )([nt\d\.]+)/i
+                        ],
+                        [
+                            [
+                                u,
+                                "Windows"
+                            ],
+                            [
+                                f,
+                                strMapper,
+                                X
+                            ]
+                        ],
+                        [
+                            /ip[honead]{2,4}\b(?:.*os ([\w]+) like mac|; opera)/i,
+                            /ios;fbsv\/([\d\.]+)/i,
+                            /cfnetwork\/.+darwin/i
+                        ],
+                        [
+                            [
+                                f,
+                                /_/g,
+                                "."
+                            ],
+                            [
+                                u,
+                                "iOS"
+                            ]
+                        ],
+                        [
+                            /(mac os x) ?([\w\. ]*)/i,
+                            /(macintosh|mac_powerpc\b)(?!.+haiku)/i
+                        ],
+                        [
+                            [
+                                u,
+                                Z
+                            ],
+                            [
+                                f,
+                                /_/g,
+                                "."
+                            ]
+                        ],
+                        [
+                            /droid ([\w\.]+)\b.+(android[- ]x86|harmonyos)/i
+                        ],
+                        [
+                            f,
+                            u
+                        ],
+                        [
+                            /(android|webos|qnx|bada|rim tablet os|maemo|meego|sailfish)[-\/ ]?([\w\.]*)/i,
+                            /(blackberry)\w*\/([\w\.]*)/i,
+                            /(tizen|kaios)[\/ ]([\w\.]+)/i,
+                            /\((series40);/i
+                        ],
+                        [
+                            u,
+                            f
+                        ],
+                        [
+                            /\(bb(10);/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                N
+                            ]
+                        ],
+                        [
+                            /(?:symbian ?os|symbos|s60(?=;)|series60)[-\/ ]?([\w\.]*)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                "Symbian"
+                            ]
+                        ],
+                        [
+                            /mozilla\/[\d\.]+ \((?:mobile|tablet|tv|mobile; [\w ]+); rv:.+ gecko\/([\w\.]+)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                O + " OS"
+                            ]
+                        ],
+                        [
+                            /web0s;.+rt(tv)/i,
+                            /\b(?:hp)?wos(?:browser)?\/([\w\.]+)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                "webOS"
+                            ]
+                        ],
+                        [
+                            /watch(?: ?os[,\/]|\d,\d\/)([\d\.]+)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                "watchOS"
+                            ]
+                        ],
+                        [
+                            /crkey\/([\d\.]+)/i
+                        ],
+                        [
+                            f,
+                            [
+                                u,
+                                C + "cast"
+                            ]
+                        ],
+                        [
+                            /(cros) [\w]+(?:\)| ([\w\.]+)\b)/i
+                        ],
+                        [
+                            [
+                                u,
+                                L
+                            ],
+                            f
+                        ],
+                        [
+                            /panasonic;(viera)/i,
+                            /(netrange)mmh/i,
+                            /(nettv)\/(\d+\.[\w\.]+)/i,
+                            /(nintendo|playstation) ([wids345portablevuch]+)/i,
+                            /(xbox); +xbox ([^\);]+)/i,
+                            /\b(joli|palm)\b ?(?:os)?\/?([\w\.]*)/i,
+                            /(mint)[\/\(\) ]?(\w*)/i,
+                            /(mageia|vectorlinux)[; ]/i,
+                            /([kxln]?ubuntu|debian|suse|opensuse|gentoo|arch(?= linux)|slackware|fedora|mandriva|centos|pclinuxos|red ?hat|zenwalk|linpus|raspbian|plan 9|minix|risc os|contiki|deepin|manjaro|elementary os|sabayon|linspire)(?: gnu\/linux)?(?: enterprise)?(?:[- ]linux)?(?:-gnu)?[-\/ ]?(?!chrom|package)([-\w\.]*)/i,
+                            /(hurd|linux) ?([\w\.]*)/i,
+                            /(gnu) ?([\w\.]*)/i,
+                            /\b([-frentopcghs]{0,5}bsd|dragonfly)[\/ ]?(?!amd|[ix346]{1,2}86)([\w\.]*)/i,
+                            /(haiku) (\w+)/i
+                        ],
+                        [
+                            u,
+                            f
+                        ],
+                        [
+                            /(sunos) ?([\w\.\d]*)/i
+                        ],
+                        [
+                            [
+                                u,
+                                "Solaris"
+                            ],
+                            f
+                        ],
+                        [
+                            /((?:open)?solaris)[-\/ ]?([\w\.]*)/i,
+                            /(aix) ((\d)(?=\.|\)| )[\w\.])*/i,
+                            /\b(beos|os\/2|amigaos|morphos|openvms|fuchsia|hp-ux|serenityos)/i,
+                            /(unix) ?([\w\.]*)/i
+                        ],
+                        [
+                            u,
+                            f
+                        ]
+                    ]
+                };
+                var UAParser = function(i, e) {
+                    if (typeof i === w) {
+                        e = i;
+                        i = a;
+                    }
+                    if (!(this instanceof UAParser)) {
+                        return new UAParser(i, e).getResult();
+                    }
+                    var r = typeof o !== b && o.navigator ? o.navigator : a;
+                    var n = i || (r && r.userAgent ? r.userAgent : t);
+                    var v = r && r.userAgentData ? r.userAgentData : a;
+                    var x = e ? extend(K, e) : K;
+                    var _ = r && r.userAgent == n;
+                    this.getBrowser = function() {
+                        var i = {};
+                        i[u] = a;
+                        i[f] = a;
+                        rgxMapper.call(i, n, x.browser);
+                        i[d] = majorize(i[f]);
+                        if (_ && r && r.brave && typeof r.brave.isBrave == s) {
+                            i[u] = "Brave";
+                        }
+                        return i;
+                    };
+                    this.getCPU = function() {
+                        var i = {};
+                        i[h] = a;
+                        rgxMapper.call(i, n, x.cpu);
+                        return i;
+                    };
+                    this.getDevice = function() {
+                        var i = {};
+                        i[m] = a;
+                        i[c] = a;
+                        i[p] = a;
+                        rgxMapper.call(i, n, x.device);
+                        if (_ && !i[p] && v && v.mobile) {
+                            i[p] = g;
+                        }
+                        if (_ && i[c] == "Macintosh" && r && typeof r.standalone !== b && r.maxTouchPoints && r.maxTouchPoints > 2) {
+                            i[c] = "iPad";
+                            i[p] = k;
+                        }
+                        return i;
+                    };
+                    this.getEngine = function() {
+                        var i = {};
+                        i[u] = a;
+                        i[f] = a;
+                        rgxMapper.call(i, n, x.engine);
+                        return i;
+                    };
+                    this.getOS = function() {
+                        var i = {};
+                        i[u] = a;
+                        i[f] = a;
+                        rgxMapper.call(i, n, x.os);
+                        if (_ && !i[u] && v && v.platform != "Unknown") {
+                            i[u] = v.platform.replace(/chrome os/i, L).replace(/macos/i, Z);
+                        }
+                        return i;
+                    };
+                    this.getResult = function() {
+                        return {
+                            ua: this.getUA(),
+                            browser: this.getBrowser(),
+                            engine: this.getEngine(),
+                            os: this.getOS(),
+                            device: this.getDevice(),
+                            cpu: this.getCPU()
+                        };
+                    };
+                    this.getUA = function() {
+                        return n;
+                    };
+                    this.setUA = function(i) {
+                        n = typeof i === l && i.length > q ? trim(i, q) : i;
+                        return this;
+                    };
+                    this.setUA(n);
+                    return this;
+                };
+                UAParser.VERSION = r;
+                UAParser.BROWSER = enumerize([
+                    u,
+                    f,
+                    d
+                ]);
+                UAParser.CPU = enumerize([
+                    h
+                ]);
+                UAParser.DEVICE = enumerize([
+                    c,
+                    m,
+                    p,
+                    v,
+                    g,
+                    x,
+                    k,
+                    _,
+                    y
+                ]);
+                UAParser.ENGINE = UAParser.OS = enumerize([
+                    u,
+                    f
+                ]);
+                if (typeof e !== b) {
+                    if ("object" !== b && i.exports) {
+                        e = i.exports = UAParser;
+                    }
+                    e.UAParser = UAParser;
+                } else {
+                    if (typeof define === s && define.amd) {
+                        ((r)=>r !== undefined && __turbopack_context__.v(r))(function() {
+                            return UAParser;
+                        }(__turbopack_context__.r, exports, module));
+                    } else if (typeof o !== b) {
+                        o.UAParser = UAParser;
+                    }
+                }
+                var Q = typeof o !== b && (o.jQuery || o.Zepto);
+                if (Q && !Q.ua) {
+                    var Y = new UAParser;
+                    Q.ua = Y.getResult();
+                    Q.ua.get = function() {
+                        return Y.getUA();
+                    };
+                    Q.ua.set = function(i) {
+                        Y.setUA(i);
+                        var e = Y.getResult();
+                        for(var o in e){
+                            Q.ua[o] = e[o];
+                        }
+                    };
+                }
+            })(("TURBOPACK compile-time falsy", 0) ? "TURBOPACK unreachable" : this);
+        }
+    };
+    var e = {};
+    function __nccwpck_require__(o) {
+        var a = e[o];
+        if (a !== undefined) {
+            return a.exports;
+        }
+        var r = e[o] = {
+            exports: {}
+        };
+        var t = true;
+        try {
+            i[o].call(r.exports, r, r.exports, __nccwpck_require__);
+            t = false;
+        } finally{
+            if (t) delete e[o];
+        }
+        return r.exports;
+    }
+    if (typeof __nccwpck_require__ !== "undefined") __nccwpck_require__.ab = ("TURBOPACK compile-time value", "/ROOT/node_modules/next/dist/compiled/ua-parser-js") + "/";
+    var o = __nccwpck_require__(226);
+    module.exports = o;
+})();
+}),
+"[project]/node_modules/next/dist/server/web/spec-extension/user-agent.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+0 && (module.exports = {
+    isBot: null,
+    userAgent: null,
+    userAgentFromString: null
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: all[name]
+    });
+}
+_export(exports, {
+    isBot: function() {
+        return isBot;
+    },
+    userAgent: function() {
+        return userAgent;
+    },
+    userAgentFromString: function() {
+        return userAgentFromString;
+    }
+});
+const _uaparserjs = /*#__PURE__*/ _interop_require_default(__turbopack_context__.r("[project]/node_modules/next/dist/compiled/ua-parser-js/ua-parser.js [app-route] (ecmascript)"));
+function _interop_require_default(obj) {
+    return obj && obj.__esModule ? obj : {
+        default: obj
+    };
+}
+function isBot(input) {
+    return /Googlebot|Mediapartners-Google|AdsBot-Google|googleweblight|Storebot-Google|Google-PageRenderer|Google-InspectionTool|Bingbot|BingPreview|Slurp|DuckDuckBot|baiduspider|yandex|sogou|LinkedInBot|bitlybot|tumblr|vkShare|quora link preview|facebookexternalhit|facebookcatalog|Twitterbot|applebot|redditbot|Slackbot|Discordbot|WhatsApp|SkypeUriPreview|ia_archiver|GPTBot/i.test(input);
+}
+function userAgentFromString(input) {
+    return {
+        ...(0, _uaparserjs.default)(input),
+        isBot: input === undefined ? false : isBot(input)
+    };
+}
+function userAgent({ headers }) {
+    return userAgentFromString(headers.get('user-agent') || undefined);
+}
+}),
+"[project]/node_modules/next/dist/server/web/spec-extension/url-pattern.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "URLPattern", {
+    enumerable: true,
+    get: function() {
+        return GlobalURLPattern;
+    }
+});
+const GlobalURLPattern = typeof URLPattern === 'undefined' ? undefined : URLPattern;
+}),
+"[project]/node_modules/next/dist/server/after/after.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "after", {
+    enumerable: true,
+    get: function() {
+        return after;
+    }
+});
+const _workasyncstorageexternal = __turbopack_context__.r("[externals]/next/dist/server/app-render/work-async-storage.external.js [external] (next/dist/server/app-render/work-async-storage.external.js, cjs)");
+function after(task) {
+    const workStore = _workasyncstorageexternal.workAsyncStorage.getStore();
+    if (!workStore) {
+        // TODO(after): the linked docs page talks about *dynamic* APIs, which after soon won't be anymore
+        throw Object.defineProperty(new Error('`after` was called outside a request scope. Read more: https://nextjs.org/docs/messages/next-dynamic-api-wrong-context'), "__NEXT_ERROR_CODE", {
+            value: "E468",
+            enumerable: false,
+            configurable: true
+        });
+    }
+    const { afterContext } = workStore;
+    return afterContext.after(task);
+}
+}),
+"[project]/node_modules/next/dist/server/after/index.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+0 && __export(__turbopack_context__.r("[project]/node_modules/next/dist/server/after/after.js [app-route] (ecmascript)"));
+_export_star(__turbopack_context__.r("[project]/node_modules/next/dist/server/after/after.js [app-route] (ecmascript)"), exports);
+function _export_star(from, to) {
+    Object.keys(from).forEach(function(k) {
+        if (k !== "default" && !Object.prototype.hasOwnProperty.call(to, k)) {
+            Object.defineProperty(to, k, {
+                enumerable: true,
+                get: function() {
+                    return from[k];
+                }
+            });
+        }
+    });
+    return from;
+}
+}),
+"[project]/node_modules/next/dist/server/route-modules/app-page/module.compiled.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+;
+else {
+    if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+    ;
+    else {
+        if ("TURBOPACK compile-time truthy", 1) {
+            if ("TURBOPACK compile-time truthy", 1) {
+                module.exports = __turbopack_context__.r("[externals]/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js [external] (next/dist/compiled/next-server/app-page-turbo.runtime.dev.js, cjs)");
+            } else //TURBOPACK unreachable
+            ;
+        } else //TURBOPACK unreachable
+        ;
+    }
+}
+}),
+"[project]/node_modules/next/dist/server/route-modules/app-page/vendored/rsc/react.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+module.exports = __turbopack_context__.r("[project]/node_modules/next/dist/server/route-modules/app-page/module.compiled.js [app-route] (ecmascript)").vendored['react-rsc'].React;
+}),
+"[project]/node_modules/next/dist/client/components/hooks-server-context.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+0 && (module.exports = {
+    DynamicServerError: null,
+    isDynamicServerError: null
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: all[name]
+    });
+}
+_export(exports, {
+    DynamicServerError: function() {
+        return DynamicServerError;
+    },
+    isDynamicServerError: function() {
+        return isDynamicServerError;
+    }
+});
+const DYNAMIC_ERROR_CODE = 'DYNAMIC_SERVER_USAGE';
+class DynamicServerError extends Error {
+    constructor(description){
+        super(`Dynamic server usage: ${description}`), this.description = description, this.digest = DYNAMIC_ERROR_CODE;
+    }
+}
+function isDynamicServerError(err) {
+    if (typeof err !== 'object' || err === null || !('digest' in err) || typeof err.digest !== 'string') {
+        return false;
+    }
+    return err.digest === DYNAMIC_ERROR_CODE;
+}
+if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+    Object.defineProperty(exports.default, '__esModule', {
+        value: true
+    });
+    Object.assign(exports.default, exports);
+    module.exports = exports.default;
+}
+}),
+"[project]/node_modules/next/dist/client/components/static-generation-bailout.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+0 && (module.exports = {
+    StaticGenBailoutError: null,
+    isStaticGenBailoutError: null
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: all[name]
+    });
+}
+_export(exports, {
+    StaticGenBailoutError: function() {
+        return StaticGenBailoutError;
+    },
+    isStaticGenBailoutError: function() {
+        return isStaticGenBailoutError;
+    }
+});
+const NEXT_STATIC_GEN_BAILOUT = 'NEXT_STATIC_GEN_BAILOUT';
+class StaticGenBailoutError extends Error {
+    constructor(...args){
+        super(...args), this.code = NEXT_STATIC_GEN_BAILOUT;
+    }
+}
+function isStaticGenBailoutError(error) {
+    if (typeof error !== 'object' || error === null || !('code' in error)) {
+        return false;
+    }
+    return error.code === NEXT_STATIC_GEN_BAILOUT;
+}
+if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+    Object.defineProperty(exports.default, '__esModule', {
+        value: true
+    });
+    Object.assign(exports.default, exports);
+    module.exports = exports.default;
+}
+}),
+"[project]/node_modules/next/dist/shared/lib/invariant-error.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "InvariantError", {
+    enumerable: true,
+    get: function() {
+        return InvariantError;
+    }
+});
+class InvariantError extends Error {
+    constructor(message, options){
+        super(`Invariant: ${message.endsWith('.') ? message : message + '.'} This is a bug in Next.js.`, options);
+        this.name = 'InvariantError';
+    }
+}
+}),
+"[project]/node_modules/next/dist/shared/lib/promise-with-resolvers.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "createPromiseWithResolvers", {
+    enumerable: true,
+    get: function() {
+        return createPromiseWithResolvers;
+    }
+});
+function createPromiseWithResolvers() {
+    // Shim of Stage 4 Promise.withResolvers proposal
+    let resolve;
+    let reject;
+    const promise = new Promise((res, rej)=>{
+        resolve = res;
+        reject = rej;
+    });
+    return {
+        resolve: resolve,
+        reject: reject,
+        promise
+    };
+}
+}),
+"[project]/node_modules/next/dist/server/app-render/staged-rendering.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+0 && (module.exports = {
+    RenderStage: null,
+    StagedRenderingController: null
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: all[name]
+    });
+}
+_export(exports, {
+    RenderStage: function() {
+        return RenderStage;
+    },
+    StagedRenderingController: function() {
+        return StagedRenderingController;
+    }
+});
+const _invarianterror = __turbopack_context__.r("[project]/node_modules/next/dist/shared/lib/invariant-error.js [app-route] (ecmascript)");
+const _promisewithresolvers = __turbopack_context__.r("[project]/node_modules/next/dist/shared/lib/promise-with-resolvers.js [app-route] (ecmascript)");
+var RenderStage = /*#__PURE__*/ function(RenderStage) {
+    RenderStage[RenderStage["Before"] = 1] = "Before";
+    RenderStage[RenderStage["EarlyStatic"] = 2] = "EarlyStatic";
+    RenderStage[RenderStage["Static"] = 3] = "Static";
+    RenderStage[RenderStage["EarlyRuntime"] = 4] = "EarlyRuntime";
+    RenderStage[RenderStage["Runtime"] = 5] = "Runtime";
+    RenderStage[RenderStage["Dynamic"] = 6] = "Dynamic";
+    RenderStage[RenderStage["Abandoned"] = 7] = "Abandoned";
+    return RenderStage;
+}({});
+class StagedRenderingController {
+    constructor(abortSignal, abandonController, shouldTrackSyncIO){
+        this.abortSignal = abortSignal;
+        this.abandonController = abandonController;
+        this.shouldTrackSyncIO = shouldTrackSyncIO;
+        this.currentStage = 1;
+        this.syncInterruptReason = null;
+        this.staticStageEndTime = Infinity;
+        this.runtimeStageEndTime = Infinity;
+        this.staticStageListeners = [];
+        this.earlyRuntimeStageListeners = [];
+        this.runtimeStageListeners = [];
+        this.dynamicStageListeners = [];
+        this.staticStagePromise = (0, _promisewithresolvers.createPromiseWithResolvers)();
+        this.earlyRuntimeStagePromise = (0, _promisewithresolvers.createPromiseWithResolvers)();
+        this.runtimeStagePromise = (0, _promisewithresolvers.createPromiseWithResolvers)();
+        this.dynamicStagePromise = (0, _promisewithresolvers.createPromiseWithResolvers)();
+        if (abortSignal) {
+            abortSignal.addEventListener('abort', ()=>{
+                // Reject all stage promises that haven't already been resolved.
+                // If a promise was already resolved via advanceStage, the reject
+                // is a no-op. The ignoreReject handler suppresses unhandled
+                // rejection warnings for promises that no one is awaiting.
+                const { reason } = abortSignal;
+                this.staticStagePromise.promise.catch(ignoreReject);
+                this.staticStagePromise.reject(reason);
+                this.earlyRuntimeStagePromise.promise.catch(ignoreReject);
+                this.earlyRuntimeStagePromise.reject(reason);
+                this.runtimeStagePromise.promise.catch(ignoreReject);
+                this.runtimeStagePromise.reject(reason);
+                this.dynamicStagePromise.promise.catch(ignoreReject);
+                this.dynamicStagePromise.reject(reason);
+            }, {
+                once: true
+            });
+        }
+        if (abandonController) {
+            abandonController.signal.addEventListener('abort', ()=>{
+                this.abandonRender();
+            }, {
+                once: true
+            });
+        }
+    }
+    onStage(stage, callback) {
+        if (this.currentStage >= stage) {
+            callback();
+        } else if (stage === 3) {
+            this.staticStageListeners.push(callback);
+        } else if (stage === 4) {
+            this.earlyRuntimeStageListeners.push(callback);
+        } else if (stage === 5) {
+            this.runtimeStageListeners.push(callback);
+        } else if (stage === 6) {
+            this.dynamicStageListeners.push(callback);
+        } else {
+            // This should never happen
+            throw Object.defineProperty(new _invarianterror.InvariantError(`Invalid render stage: ${stage}`), "__NEXT_ERROR_CODE", {
+                value: "E881",
+                enumerable: false,
+                configurable: true
+            });
+        }
+    }
+    shouldTrackSyncInterrupt() {
+        if (!this.shouldTrackSyncIO) {
+            return false;
+        }
+        switch(this.currentStage){
+            case 1:
+                // If we haven't started the render yet, it can't be interrupted.
+                return false;
+            case 2:
+            case 3:
+                return true;
+            case 4:
+                // EarlyRuntime is for runtime-prefetchable segments. Sync IO
+                // should error because it would abort a runtime prefetch.
+                return true;
+            case 5:
+                // Runtime is for non-prefetchable segments. Sync IO is fine there
+                // because in practice this segment will never be runtime prefetched
+                return false;
+            case 6:
+            case 7:
+                return false;
+            default:
+                return false;
+        }
+    }
+    syncInterruptCurrentStageWithReason(reason) {
+        if (this.currentStage === 1) {
+            return;
+        }
+        // If the render has already been abandoned, there's nothing to interrupt.
+        if (this.currentStage === 7) {
+            return;
+        }
+        // If Sync IO occurs during an abandonable render, we trigger the abandon.
+        // The abandon listener will call abandonRender which advances through
+        // stages to let caches fill before marking as Abandoned.
+        if (this.abandonController) {
+            this.abandonController.abort();
+            return;
+        }
+        if (this.abortSignal) {
+            // If this is an abortable render, we capture the interruption reason and stop advancing.
+            // We don't release any more promises.
+            // The caller is expected to abort the signal.
+            this.syncInterruptReason = reason;
+            this.currentStage = 7;
+            return;
+        }
+        // If we're in a non-abandonable & non-abortable render,
+        // we need to advance to the Dynamic stage and capture the interruption reason.
+        // (in dev, this will be the restarted render)
+        switch(this.currentStage){
+            case 2:
+            case 3:
+            case 4:
+                {
+                    // EarlyRuntime is for runtime-prefetchable segments. Sync IO here
+                    // means the prefetch would be aborted too early.
+                    this.syncInterruptReason = reason;
+                    this.advanceStage(6);
+                    return;
+                }
+            case 5:
+                {
+                    // canSyncInterrupt returns false for Runtime, so we should
+                    // never get here. Defensive no-op.
+                    return;
+                }
+            case 6:
+            default:
+        }
+    }
+    getSyncInterruptReason() {
+        return this.syncInterruptReason;
+    }
+    getStaticStageEndTime() {
+        return this.staticStageEndTime;
+    }
+    getRuntimeStageEndTime() {
+        return this.runtimeStageEndTime;
+    }
+    abandonRender() {
+        // In staged rendering, only the initial render is abandonable.
+        // We can abandon the initial render if
+        //   1. We notice a cache miss, and need to wait for caches to fill
+        //   2. A sync IO error occurs, and the render should be interrupted
+        //      (this might be a lazy intitialization of a module,
+        //       so we still want to restart in this case and see if it still occurs)
+        // In either case, we'll be doing another render after this one,
+        // so we only want to unblock the next stage, not Dynamic, because
+        // unblocking the dynamic stage would likely lead to wasted (uncached) IO.
+        const { currentStage } = this;
+        switch(currentStage){
+            case 2:
+                {
+                    this.resolveStaticStage();
+                }
+            // intentional fallthrough
+            case 3:
+                {
+                    this.resolveEarlyRuntimeStage();
+                }
+            // intentional fallthrough
+            case 4:
+                {
+                    this.resolveRuntimeStage();
+                }
+            // intentional fallthrough
+            case 5:
+                {
+                    this.currentStage = 7;
+                    return;
+                }
+            case 6:
+            case 1:
+            case 7:
+                break;
+            default:
+                {
+                    currentStage;
+                }
+        }
+    }
+    advanceStage(stage) {
+        // If we're already at the target stage or beyond, do nothing.
+        // (this can happen e.g. if sync IO advanced us to the dynamic stage)
+        if (stage <= this.currentStage) {
+            return;
+        }
+        let currentStage = this.currentStage;
+        this.currentStage = stage;
+        if (currentStage < 3 && stage >= 3) {
+            this.resolveStaticStage();
+        }
+        if (currentStage < 4 && stage >= 4) {
+            this.resolveEarlyRuntimeStage();
+        }
+        if (currentStage < 5 && stage >= 5) {
+            this.staticStageEndTime = performance.now() + performance.timeOrigin;
+            this.resolveRuntimeStage();
+        }
+        if (currentStage < 6 && stage >= 6) {
+            this.runtimeStageEndTime = performance.now() + performance.timeOrigin;
+            this.resolveDynamicStage();
+            return;
+        }
+    }
+    /** Fire the `onStage` listeners for the static stage and unblock any promises waiting for it. */ resolveStaticStage() {
+        const staticListeners = this.staticStageListeners;
+        for(let i = 0; i < staticListeners.length; i++){
+            staticListeners[i]();
+        }
+        staticListeners.length = 0;
+        this.staticStagePromise.resolve();
+    }
+    /** Fire the `onStage` listeners for the early runtime stage and unblock any promises waiting for it. */ resolveEarlyRuntimeStage() {
+        const earlyRuntimeListeners = this.earlyRuntimeStageListeners;
+        for(let i = 0; i < earlyRuntimeListeners.length; i++){
+            earlyRuntimeListeners[i]();
+        }
+        earlyRuntimeListeners.length = 0;
+        this.earlyRuntimeStagePromise.resolve();
+    }
+    /** Fire the `onStage` listeners for the runtime stage and unblock any promises waiting for it. */ resolveRuntimeStage() {
+        const runtimeListeners = this.runtimeStageListeners;
+        for(let i = 0; i < runtimeListeners.length; i++){
+            runtimeListeners[i]();
+        }
+        runtimeListeners.length = 0;
+        this.runtimeStagePromise.resolve();
+    }
+    /** Fire the `onStage` listeners for the dynamic stage and unblock any promises waiting for it. */ resolveDynamicStage() {
+        const dynamicListeners = this.dynamicStageListeners;
+        for(let i = 0; i < dynamicListeners.length; i++){
+            dynamicListeners[i]();
+        }
+        dynamicListeners.length = 0;
+        this.dynamicStagePromise.resolve();
+    }
+    getStagePromise(stage) {
+        switch(stage){
+            case 3:
+                {
+                    return this.staticStagePromise.promise;
+                }
+            case 4:
+                {
+                    return this.earlyRuntimeStagePromise.promise;
+                }
+            case 5:
+                {
+                    return this.runtimeStagePromise.promise;
+                }
+            case 6:
+                {
+                    return this.dynamicStagePromise.promise;
+                }
+            default:
+                {
+                    stage;
+                    throw Object.defineProperty(new _invarianterror.InvariantError(`Invalid render stage: ${stage}`), "__NEXT_ERROR_CODE", {
+                        value: "E881",
+                        enumerable: false,
+                        configurable: true
+                    });
+                }
+        }
+    }
+    waitForStage(stage) {
+        return this.getStagePromise(stage);
+    }
+    delayUntilStage(stage, displayName, resolvedValue) {
+        const ioTriggerPromise = this.getStagePromise(stage);
+        const promise = makeDevtoolsIOPromiseFromIOTrigger(ioTriggerPromise, displayName, resolvedValue);
+        // Analogously to `makeHangingPromise`, we might reject this promise if the signal is invoked.
+        // (e.g. in the case where we don't want want the render to proceed to the dynamic stage and abort it).
+        // We shouldn't consider this an unhandled rejection, so we attach a noop catch handler here to suppress this warning.
+        if (this.abortSignal) {
+            promise.catch(ignoreReject);
+        }
+        return promise;
+    }
+}
+function ignoreReject() {}
+// TODO(restart-on-cache-miss): the layering of `delayUntilStage`,
+// `makeDevtoolsIOPromiseFromIOTrigger` and and `makeDevtoolsIOAwarePromise`
+// is confusing, we should clean it up.
+function makeDevtoolsIOPromiseFromIOTrigger(ioTrigger, displayName, resolvedValue) {
+    // If we create a `new Promise` and give it a displayName
+    // (with no userspace code above us in the stack)
+    // React Devtools will use it as the IO cause when determining "suspended by".
+    // In particular, it should shadow any inner IO that resolved/rejected the promise
+    // (in case of staged rendering, this will be the `setTimeout` that triggers the relevant stage)
+    const promise = new Promise((resolve, reject)=>{
+        ioTrigger.then(resolve.bind(null, resolvedValue), reject);
+    });
+    if (displayName !== undefined) {
+        // @ts-expect-error
+        promise.displayName = displayName;
+    }
+    return promise;
+}
+}),
+"[project]/node_modules/next/dist/server/dynamic-rendering-utils.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+0 && (module.exports = {
+    delayUntilRuntimeStage: null,
+    getRuntimeStage: null,
+    isHangingPromiseRejectionError: null,
+    makeDevtoolsIOAwarePromise: null,
+    makeHangingPromise: null
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: all[name]
+    });
+}
+_export(exports, {
+    delayUntilRuntimeStage: function() {
+        return delayUntilRuntimeStage;
+    },
+    getRuntimeStage: function() {
+        return getRuntimeStage;
+    },
+    isHangingPromiseRejectionError: function() {
+        return isHangingPromiseRejectionError;
+    },
+    makeDevtoolsIOAwarePromise: function() {
+        return makeDevtoolsIOAwarePromise;
+    },
+    makeHangingPromise: function() {
+        return makeHangingPromise;
+    }
+});
+const _stagedrendering = __turbopack_context__.r("[project]/node_modules/next/dist/server/app-render/staged-rendering.js [app-route] (ecmascript)");
+function isHangingPromiseRejectionError(err) {
+    if (typeof err !== 'object' || err === null || !('digest' in err)) {
+        return false;
+    }
+    return err.digest === HANGING_PROMISE_REJECTION;
+}
+const HANGING_PROMISE_REJECTION = 'HANGING_PROMISE_REJECTION';
+class HangingPromiseRejectionError extends Error {
+    constructor(route, expression){
+        super(`During prerendering, ${expression} rejects when the prerender is complete. Typically these errors are handled by React but if you move ${expression} to a different context by using \`setTimeout\`, \`after\`, or similar functions you may observe this error and you should handle it in that context. This occurred at route "${route}".`), this.route = route, this.expression = expression, this.digest = HANGING_PROMISE_REJECTION;
+    }
+}
+const abortListenersBySignal = new WeakMap();
+function makeHangingPromise(signal, route, expression) {
+    if (signal.aborted) {
+        return Promise.reject(new HangingPromiseRejectionError(route, expression));
+    } else {
+        const hangingPromise = new Promise((_, reject)=>{
+            const boundRejection = reject.bind(null, new HangingPromiseRejectionError(route, expression));
+            let currentListeners = abortListenersBySignal.get(signal);
+            if (currentListeners) {
+                currentListeners.push(boundRejection);
+            } else {
+                const listeners = [
+                    boundRejection
+                ];
+                abortListenersBySignal.set(signal, listeners);
+                signal.addEventListener('abort', ()=>{
+                    for(let i = 0; i < listeners.length; i++){
+                        listeners[i]();
+                    }
+                }, {
+                    once: true
+                });
+            }
+        });
+        // We are fine if no one actually awaits this promise. We shouldn't consider this an unhandled rejection so
+        // we attach a noop catch handler here to suppress this warning. If you actually await somewhere or construct
+        // your own promise out of it you'll need to ensure you handle the error when it rejects.
+        hangingPromise.catch(ignoreReject);
+        return hangingPromise;
+    }
+}
+function ignoreReject() {}
+function makeDevtoolsIOAwarePromise(underlying, requestStore, stage) {
+    if (requestStore.stagedRendering) {
+        // We resolve each stage in a timeout, so React DevTools will pick this up as IO.
+        return requestStore.stagedRendering.delayUntilStage(stage, undefined, underlying);
+    }
+    // in React DevTools if we resolve in a setTimeout we will observe
+    // the promise resolution as something that can suspend a boundary or root.
+    return new Promise((resolve)=>{
+        // Must use setTimeout to be considered IO React DevTools. setImmediate will not work.
+        setTimeout(()=>{
+            resolve(underlying);
+        }, 0);
+    });
+}
+function getRuntimeStage(stagedRendering) {
+    if (stagedRendering.currentStage === _stagedrendering.RenderStage.EarlyStatic || stagedRendering.currentStage === _stagedrendering.RenderStage.EarlyRuntime) {
+        return _stagedrendering.RenderStage.EarlyRuntime;
+    }
+    return _stagedrendering.RenderStage.Runtime;
+}
+function delayUntilRuntimeStage(prerenderStore, result) {
+    const { stagedRendering } = prerenderStore;
+    if (!stagedRendering) {
+        return result;
+    }
+    return stagedRendering.waitForStage(getRuntimeStage(stagedRendering)).then(()=>result);
+}
+}),
+"[project]/node_modules/next/dist/lib/framework/boundary-constants.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+0 && (module.exports = {
+    METADATA_BOUNDARY_NAME: null,
+    OUTLET_BOUNDARY_NAME: null,
+    ROOT_LAYOUT_BOUNDARY_NAME: null,
+    VIEWPORT_BOUNDARY_NAME: null
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: all[name]
+    });
+}
+_export(exports, {
+    METADATA_BOUNDARY_NAME: function() {
+        return METADATA_BOUNDARY_NAME;
+    },
+    OUTLET_BOUNDARY_NAME: function() {
+        return OUTLET_BOUNDARY_NAME;
+    },
+    ROOT_LAYOUT_BOUNDARY_NAME: function() {
+        return ROOT_LAYOUT_BOUNDARY_NAME;
+    },
+    VIEWPORT_BOUNDARY_NAME: function() {
+        return VIEWPORT_BOUNDARY_NAME;
+    }
+});
+const METADATA_BOUNDARY_NAME = '__next_metadata_boundary__';
+const VIEWPORT_BOUNDARY_NAME = '__next_viewport_boundary__';
+const OUTLET_BOUNDARY_NAME = '__next_outlet_boundary__';
+const ROOT_LAYOUT_BOUNDARY_NAME = '__next_root_layout_boundary__';
+}),
+"[project]/node_modules/next/dist/lib/scheduler.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+0 && (module.exports = {
+    atLeastOneTask: null,
+    scheduleImmediate: null,
+    scheduleOnNextTick: null,
+    waitAtLeastOneReactRenderTask: null
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: all[name]
+    });
+}
+_export(exports, {
+    atLeastOneTask: function() {
+        return atLeastOneTask;
+    },
+    scheduleImmediate: function() {
+        return scheduleImmediate;
+    },
+    scheduleOnNextTick: function() {
+        return scheduleOnNextTick;
+    },
+    waitAtLeastOneReactRenderTask: function() {
+        return waitAtLeastOneReactRenderTask;
+    }
+});
+const scheduleOnNextTick = (cb)=>{
+    // We use Promise.resolve().then() here so that the operation is scheduled at
+    // the end of the promise job queue, we then add it to the next process tick
+    // to ensure it's evaluated afterwards.
+    //
+    // This was inspired by the implementation of the DataLoader interface: https://github.com/graphql/dataloader/blob/d336bd15282664e0be4b4a657cb796f09bafbc6b/src/index.js#L213-L255
+    //
+    Promise.resolve().then(()=>{
+        if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+        ;
+        else {
+            process.nextTick(cb);
+        }
+    });
+};
+const scheduleImmediate = (cb)=>{
+    if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+    ;
+    else {
+        setImmediate(cb);
+    }
+};
+function atLeastOneTask() {
+    return new Promise((resolve)=>scheduleImmediate(resolve));
+}
+function waitAtLeastOneReactRenderTask() {
+    if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+    ;
+    else {
+        return new Promise((r)=>setImmediate(r));
+    }
+}
+}),
+"[project]/node_modules/next/dist/shared/lib/lazy-dynamic/bailout-to-csr.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+// This has to be a shared module which is shared between client component error boundary and dynamic component
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+0 && (module.exports = {
+    BailoutToCSRError: null,
+    isBailoutToCSRError: null
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: all[name]
+    });
+}
+_export(exports, {
+    BailoutToCSRError: function() {
+        return BailoutToCSRError;
+    },
+    isBailoutToCSRError: function() {
+        return isBailoutToCSRError;
+    }
+});
+const BAILOUT_TO_CSR = 'BAILOUT_TO_CLIENT_SIDE_RENDERING';
+class BailoutToCSRError extends Error {
+    constructor(reason){
+        super(`Bail out to client-side rendering: ${reason}`), this.reason = reason, this.digest = BAILOUT_TO_CSR;
+    }
+}
+function isBailoutToCSRError(err) {
+    if (typeof err !== 'object' || err === null || !('digest' in err)) {
+        return false;
+    }
+    return err.digest === BAILOUT_TO_CSR;
+}
+}),
+"[project]/node_modules/next/dist/server/app-render/instant-validation/boundary-constants.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "INSTANT_VALIDATION_BOUNDARY_NAME", {
+    enumerable: true,
+    get: function() {
+        return INSTANT_VALIDATION_BOUNDARY_NAME;
+    }
+});
+const INSTANT_VALIDATION_BOUNDARY_NAME = '__next_instant_validation_boundary__';
+}),
+"[project]/node_modules/next/dist/server/app-render/dynamic-rendering.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+/**
+ * The functions provided by this module are used to communicate certain properties
+ * about the currently running code so that Next.js can make decisions on how to handle
+ * the current execution in different rendering modes such as pre-rendering, resuming, and SSR.
+ *
+ * Today Next.js treats all code as potentially static. Certain APIs may only make sense when dynamically rendering.
+ * Traditionally this meant deopting the entire render to dynamic however with PPR we can now deopt parts
+ * of a React tree as dynamic while still keeping other parts static. There are really two different kinds of
+ * Dynamic indications.
+ *
+ * The first is simply an intention to be dynamic. unstable_noStore is an example of this where
+ * the currently executing code simply declares that the current scope is dynamic but if you use it
+ * inside unstable_cache it can still be cached. This type of indication can be removed if we ever
+ * make the default dynamic to begin with because the only way you would ever be static is inside
+ * a cache scope which this indication does not affect.
+ *
+ * The second is an indication that a dynamic data source was read. This is a stronger form of dynamic
+ * because it means that it is inappropriate to cache this at all. using a dynamic data source inside
+ * unstable_cache should error. If you want to use some dynamic data inside unstable_cache you should
+ * read that data outside the cache and pass it in as an argument to the cached function.
+ */ Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+0 && (module.exports = {
+    DynamicHoleKind: null,
+    Postpone: null,
+    PreludeState: null,
+    abortAndThrowOnSynchronousRequestDataAccess: null,
+    abortOnSynchronousPlatformIOAccess: null,
+    accessedDynamicData: null,
+    annotateDynamicAccess: null,
+    consumeDynamicAccess: null,
+    createDynamicTrackingState: null,
+    createDynamicValidationState: null,
+    createHangingInputAbortSignal: null,
+    createInstantValidationState: null,
+    createRenderInBrowserAbortSignal: null,
+    formatDynamicAPIAccesses: null,
+    getFirstDynamicReason: null,
+    getNavigationDisallowedDynamicReasons: null,
+    getStaticShellDisallowedDynamicReasons: null,
+    isDynamicPostpone: null,
+    isPrerenderInterruptedError: null,
+    logDisallowedDynamicError: null,
+    markCurrentScopeAsDynamic: null,
+    postponeWithTracking: null,
+    throwIfDisallowedDynamic: null,
+    throwToInterruptStaticGeneration: null,
+    trackAllowedDynamicAccess: null,
+    trackDynamicDataInDynamicRender: null,
+    trackDynamicHoleInNavigation: null,
+    trackDynamicHoleInRuntimeShell: null,
+    trackDynamicHoleInStaticShell: null,
+    trackThrownErrorInNavigation: null,
+    useDynamicRouteParams: null,
+    useDynamicSearchParams: null
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: all[name]
+    });
+}
+_export(exports, {
+    DynamicHoleKind: function() {
+        return DynamicHoleKind;
+    },
+    Postpone: function() {
+        return Postpone;
+    },
+    PreludeState: function() {
+        return PreludeState;
+    },
+    abortAndThrowOnSynchronousRequestDataAccess: function() {
+        return abortAndThrowOnSynchronousRequestDataAccess;
+    },
+    abortOnSynchronousPlatformIOAccess: function() {
+        return abortOnSynchronousPlatformIOAccess;
+    },
+    accessedDynamicData: function() {
+        return accessedDynamicData;
+    },
+    annotateDynamicAccess: function() {
+        return annotateDynamicAccess;
+    },
+    consumeDynamicAccess: function() {
+        return consumeDynamicAccess;
+    },
+    createDynamicTrackingState: function() {
+        return createDynamicTrackingState;
+    },
+    createDynamicValidationState: function() {
+        return createDynamicValidationState;
+    },
+    createHangingInputAbortSignal: function() {
+        return createHangingInputAbortSignal;
+    },
+    createInstantValidationState: function() {
+        return createInstantValidationState;
+    },
+    createRenderInBrowserAbortSignal: function() {
+        return createRenderInBrowserAbortSignal;
+    },
+    formatDynamicAPIAccesses: function() {
+        return formatDynamicAPIAccesses;
+    },
+    getFirstDynamicReason: function() {
+        return getFirstDynamicReason;
+    },
+    getNavigationDisallowedDynamicReasons: function() {
+        return getNavigationDisallowedDynamicReasons;
+    },
+    getStaticShellDisallowedDynamicReasons: function() {
+        return getStaticShellDisallowedDynamicReasons;
+    },
+    isDynamicPostpone: function() {
+        return isDynamicPostpone;
+    },
+    isPrerenderInterruptedError: function() {
+        return isPrerenderInterruptedError;
+    },
+    logDisallowedDynamicError: function() {
+        return logDisallowedDynamicError;
+    },
+    markCurrentScopeAsDynamic: function() {
+        return markCurrentScopeAsDynamic;
+    },
+    postponeWithTracking: function() {
+        return postponeWithTracking;
+    },
+    throwIfDisallowedDynamic: function() {
+        return throwIfDisallowedDynamic;
+    },
+    throwToInterruptStaticGeneration: function() {
+        return throwToInterruptStaticGeneration;
+    },
+    trackAllowedDynamicAccess: function() {
+        return trackAllowedDynamicAccess;
+    },
+    trackDynamicDataInDynamicRender: function() {
+        return trackDynamicDataInDynamicRender;
+    },
+    trackDynamicHoleInNavigation: function() {
+        return trackDynamicHoleInNavigation;
+    },
+    trackDynamicHoleInRuntimeShell: function() {
+        return trackDynamicHoleInRuntimeShell;
+    },
+    trackDynamicHoleInStaticShell: function() {
+        return trackDynamicHoleInStaticShell;
+    },
+    trackThrownErrorInNavigation: function() {
+        return trackThrownErrorInNavigation;
+    },
+    useDynamicRouteParams: function() {
+        return useDynamicRouteParams;
+    },
+    useDynamicSearchParams: function() {
+        return useDynamicSearchParams;
+    }
+});
+const _react = /*#__PURE__*/ _interop_require_default(__turbopack_context__.r("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/rsc/react.js [app-route] (ecmascript)"));
+const _hooksservercontext = __turbopack_context__.r("[project]/node_modules/next/dist/client/components/hooks-server-context.js [app-route] (ecmascript)");
+const _staticgenerationbailout = __turbopack_context__.r("[project]/node_modules/next/dist/client/components/static-generation-bailout.js [app-route] (ecmascript)");
+const _workunitasyncstorageexternal = __turbopack_context__.r("[externals]/next/dist/server/app-render/work-unit-async-storage.external.js [external] (next/dist/server/app-render/work-unit-async-storage.external.js, cjs)");
+const _workasyncstorageexternal = __turbopack_context__.r("[externals]/next/dist/server/app-render/work-async-storage.external.js [external] (next/dist/server/app-render/work-async-storage.external.js, cjs)");
+const _dynamicrenderingutils = __turbopack_context__.r("[project]/node_modules/next/dist/server/dynamic-rendering-utils.js [app-route] (ecmascript)");
+const _boundaryconstants = __turbopack_context__.r("[project]/node_modules/next/dist/lib/framework/boundary-constants.js [app-route] (ecmascript)");
+const _scheduler = __turbopack_context__.r("[project]/node_modules/next/dist/lib/scheduler.js [app-route] (ecmascript)");
+const _bailouttocsr = __turbopack_context__.r("[project]/node_modules/next/dist/shared/lib/lazy-dynamic/bailout-to-csr.js [app-route] (ecmascript)");
+const _invarianterror = __turbopack_context__.r("[project]/node_modules/next/dist/shared/lib/invariant-error.js [app-route] (ecmascript)");
+const _boundaryconstants1 = __turbopack_context__.r("[project]/node_modules/next/dist/server/app-render/instant-validation/boundary-constants.js [app-route] (ecmascript)");
+function _interop_require_default(obj) {
+    return obj && obj.__esModule ? obj : {
+        default: obj
+    };
+}
+const hasPostpone = typeof _react.default.unstable_postpone === 'function';
+function createDynamicTrackingState(isDebugDynamicAccesses) {
+    return {
+        isDebugDynamicAccesses,
+        dynamicAccesses: [],
+        syncDynamicErrorWithStack: null
+    };
+}
+function createDynamicValidationState() {
+    return {
+        hasSuspenseAboveBody: false,
+        hasDynamicMetadata: false,
+        dynamicMetadata: null,
+        hasDynamicViewport: false,
+        hasAllowedDynamic: false,
+        dynamicErrors: []
+    };
+}
+function getFirstDynamicReason(trackingState) {
+    var _trackingState_dynamicAccesses_;
+    return (_trackingState_dynamicAccesses_ = trackingState.dynamicAccesses[0]) == null ? void 0 : _trackingState_dynamicAccesses_.expression;
+}
+function markCurrentScopeAsDynamic(store, workUnitStore, expression) {
+    if (workUnitStore) {
+        switch(workUnitStore.type){
+            case 'cache':
+            case 'unstable-cache':
+                // Inside cache scopes, marking a scope as dynamic has no effect,
+                // because the outer cache scope creates a cache boundary. This is
+                // subtly different from reading a dynamic data source, which is
+                // forbidden inside a cache scope.
+                return;
+            case 'private-cache':
+                // A private cache scope is already dynamic by definition.
+                return;
+            case 'prerender-legacy':
+            case 'prerender-ppr':
+            case 'request':
+            case 'generate-static-params':
+                break;
+            default:
+                workUnitStore;
+        }
+    }
+    // If we're forcing dynamic rendering or we're forcing static rendering, we
+    // don't need to do anything here because the entire page is already dynamic
+    // or it's static and it should not throw or postpone here.
+    if (store.forceDynamic || store.forceStatic) return;
+    if (store.dynamicShouldError) {
+        throw Object.defineProperty(new _staticgenerationbailout.StaticGenBailoutError(`Route ${store.route} with \`dynamic = "error"\` couldn't be rendered statically because it used \`${expression}\`. See more info here: https://nextjs.org/docs/app/building-your-application/rendering/static-and-dynamic#dynamic-rendering`), "__NEXT_ERROR_CODE", {
+            value: "E553",
+            enumerable: false,
+            configurable: true
+        });
+    }
+    if (workUnitStore) {
+        switch(workUnitStore.type){
+            case 'prerender-ppr':
+                return postponeWithTracking(store.route, expression, workUnitStore.dynamicTracking);
+            case 'prerender-legacy':
+                workUnitStore.revalidate = 0;
+                // We aren't prerendering, but we are generating a static page. We need
+                // to bail out of static generation.
+                const err = Object.defineProperty(new _hooksservercontext.DynamicServerError(`Route ${store.route} couldn't be rendered statically because it used ${expression}. See more info here: https://nextjs.org/docs/messages/dynamic-server-error`), "__NEXT_ERROR_CODE", {
+                    value: "E550",
+                    enumerable: false,
+                    configurable: true
+                });
+                store.dynamicUsageDescription = expression;
+                store.dynamicUsageStack = err.stack;
+                throw err;
+            case 'request':
+                if ("TURBOPACK compile-time truthy", 1) {
+                    workUnitStore.usedDynamic = true;
+                }
+                break;
+            case 'generate-static-params':
+                break;
+            default:
+                workUnitStore;
+        }
+    }
+}
+function throwToInterruptStaticGeneration(expression, store, prerenderStore) {
+    // We aren't prerendering but we are generating a static page. We need to bail out of static generation
+    const err = Object.defineProperty(new _hooksservercontext.DynamicServerError(`Route ${store.route} couldn't be rendered statically because it used \`${expression}\`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error`), "__NEXT_ERROR_CODE", {
+        value: "E558",
+        enumerable: false,
+        configurable: true
+    });
+    prerenderStore.revalidate = 0;
+    store.dynamicUsageDescription = expression;
+    store.dynamicUsageStack = err.stack;
+    throw err;
+}
+function trackDynamicDataInDynamicRender(workUnitStore) {
+    switch(workUnitStore.type){
+        case 'cache':
+        case 'unstable-cache':
+            // Inside cache scopes, marking a scope as dynamic has no effect,
+            // because the outer cache scope creates a cache boundary. This is
+            // subtly different from reading a dynamic data source, which is
+            // forbidden inside a cache scope.
+            return;
+        case 'private-cache':
+            // A private cache scope is already dynamic by definition.
+            return;
+        case 'prerender':
+        case 'prerender-runtime':
+        case 'prerender-legacy':
+        case 'prerender-ppr':
+        case 'prerender-client':
+        case 'validation-client':
+        case 'generate-static-params':
+            break;
+        case 'request':
+            if ("TURBOPACK compile-time truthy", 1) {
+                workUnitStore.usedDynamic = true;
+            }
+            break;
+        default:
+            workUnitStore;
+    }
+}
+function abortOnSynchronousDynamicDataAccess(route, expression, prerenderStore) {
+    const reason = `Route ${route} needs to bail out of prerendering at this point because it used ${expression}.`;
+    const error = createPrerenderInterruptedError(reason);
+    prerenderStore.controller.abort(error);
+    const dynamicTracking = prerenderStore.dynamicTracking;
+    if (dynamicTracking) {
+        dynamicTracking.dynamicAccesses.push({
+            // When we aren't debugging, we don't need to create another error for the
+            // stack trace.
+            stack: dynamicTracking.isDebugDynamicAccesses ? new Error().stack : undefined,
+            expression
+        });
+    }
+}
+function abortOnSynchronousPlatformIOAccess(route, expression, errorWithStack, prerenderStore) {
+    const dynamicTracking = prerenderStore.dynamicTracking;
+    abortOnSynchronousDynamicDataAccess(route, expression, prerenderStore);
+    // It is important that we set this tracking value after aborting. Aborts are executed
+    // synchronously except for the case where you abort during render itself. By setting this
+    // value late we can use it to determine if any of the aborted tasks are the task that
+    // called the sync IO expression in the first place.
+    if (dynamicTracking) {
+        if (dynamicTracking.syncDynamicErrorWithStack === null) {
+            dynamicTracking.syncDynamicErrorWithStack = errorWithStack;
+        }
+    }
+}
+function abortAndThrowOnSynchronousRequestDataAccess(route, expression, errorWithStack, prerenderStore) {
+    const prerenderSignal = prerenderStore.controller.signal;
+    if (prerenderSignal.aborted === false) {
+        // TODO it would be better to move this aborted check into the callsite so we can avoid making
+        // the error object when it isn't relevant to the aborting of the prerender however
+        // since we need the throw semantics regardless of whether we abort it is easier to land
+        // this way. See how this was handled with `abortOnSynchronousPlatformIOAccess` for a closer
+        // to ideal implementation
+        abortOnSynchronousDynamicDataAccess(route, expression, prerenderStore);
+        // It is important that we set this tracking value after aborting. Aborts are executed
+        // synchronously except for the case where you abort during render itself. By setting this
+        // value late we can use it to determine if any of the aborted tasks are the task that
+        // called the sync IO expression in the first place.
+        const dynamicTracking = prerenderStore.dynamicTracking;
+        if (dynamicTracking) {
+            if (dynamicTracking.syncDynamicErrorWithStack === null) {
+                dynamicTracking.syncDynamicErrorWithStack = errorWithStack;
+            }
+        }
+    }
+    throw createPrerenderInterruptedError(`Route ${route} needs to bail out of prerendering at this point because it used ${expression}.`);
+}
+function Postpone({ reason, route }) {
+    const prerenderStore = _workunitasyncstorageexternal.workUnitAsyncStorage.getStore();
+    const dynamicTracking = prerenderStore && prerenderStore.type === 'prerender-ppr' ? prerenderStore.dynamicTracking : null;
+    postponeWithTracking(route, reason, dynamicTracking);
+}
+function postponeWithTracking(route, expression, dynamicTracking) {
+    assertPostpone();
+    if (dynamicTracking) {
+        dynamicTracking.dynamicAccesses.push({
+            // When we aren't debugging, we don't need to create another error for the
+            // stack trace.
+            stack: dynamicTracking.isDebugDynamicAccesses ? new Error().stack : undefined,
+            expression
+        });
+    }
+    _react.default.unstable_postpone(createPostponeReason(route, expression));
+}
+function createPostponeReason(route, expression) {
+    return `Route ${route} needs to bail out of prerendering at this point because it used ${expression}. ` + `React throws this special object to indicate where. It should not be caught by ` + `your own try/catch. Learn more: https://nextjs.org/docs/messages/ppr-caught-error`;
+}
+function isDynamicPostpone(err) {
+    if (typeof err === 'object' && err !== null && typeof err.message === 'string') {
+        return isDynamicPostponeReason(err.message);
+    }
+    return false;
+}
+function isDynamicPostponeReason(reason) {
+    return reason.includes('needs to bail out of prerendering at this point because it used') && reason.includes('Learn more: https://nextjs.org/docs/messages/ppr-caught-error');
+}
+if (isDynamicPostponeReason(createPostponeReason('%%%', '^^^')) === false) {
+    throw Object.defineProperty(new Error('Invariant: isDynamicPostpone misidentified a postpone reason. This is a bug in Next.js'), "__NEXT_ERROR_CODE", {
+        value: "E296",
+        enumerable: false,
+        configurable: true
+    });
+}
+const NEXT_PRERENDER_INTERRUPTED = 'NEXT_PRERENDER_INTERRUPTED';
+function createPrerenderInterruptedError(message) {
+    const error = Object.defineProperty(new Error(message), "__NEXT_ERROR_CODE", {
+        value: "E394",
+        enumerable: false,
+        configurable: true
+    });
+    error.digest = NEXT_PRERENDER_INTERRUPTED;
+    return error;
+}
+function isPrerenderInterruptedError(error) {
+    return typeof error === 'object' && error !== null && error.digest === NEXT_PRERENDER_INTERRUPTED && 'name' in error && 'message' in error && error instanceof Error;
+}
+function accessedDynamicData(dynamicAccesses) {
+    return dynamicAccesses.length > 0;
+}
+function consumeDynamicAccess(serverDynamic, clientDynamic) {
+    // We mutate because we only call this once we are no longer writing
+    // to the dynamicTrackingState and it's more efficient than creating a new
+    // array.
+    serverDynamic.dynamicAccesses.push(...clientDynamic.dynamicAccesses);
+    return serverDynamic.dynamicAccesses;
+}
+function formatDynamicAPIAccesses(dynamicAccesses) {
+    return dynamicAccesses.filter((access)=>typeof access.stack === 'string' && access.stack.length > 0).map(({ expression, stack })=>{
+        stack = stack.split('\n') // Remove the "Error: " prefix from the first line of the stack trace as
+        // well as the first 4 lines of the stack trace which is the distance
+        // from the user code and the `new Error().stack` call.
+        .slice(4).filter((line)=>{
+            // Exclude Next.js internals from the stack trace.
+            if (line.includes('node_modules/next/')) {
+                return false;
+            }
+            // Exclude anonymous functions from the stack trace.
+            if (line.includes(' (<anonymous>)')) {
+                return false;
+            }
+            // Exclude Node.js internals from the stack trace.
+            if (line.includes(' (node:')) {
+                return false;
+            }
+            return true;
+        }).join('\n');
+        return `Dynamic API Usage Debug - ${expression}:\n${stack}`;
+    });
+}
+function assertPostpone() {
+    if (!hasPostpone) {
+        throw Object.defineProperty(new Error(`Invariant: React.unstable_postpone is not defined. This suggests the wrong version of React was loaded. This is a bug in Next.js`), "__NEXT_ERROR_CODE", {
+            value: "E224",
+            enumerable: false,
+            configurable: true
+        });
+    }
+}
+function createRenderInBrowserAbortSignal() {
+    const controller = new AbortController();
+    controller.abort(Object.defineProperty(new _bailouttocsr.BailoutToCSRError('Render in Browser'), "__NEXT_ERROR_CODE", {
+        value: "E721",
+        enumerable: false,
+        configurable: true
+    }));
+    return controller.signal;
+}
+function createHangingInputAbortSignal(workUnitStore) {
+    switch(workUnitStore.type){
+        case 'prerender':
+        case 'prerender-runtime':
+            const controller = new AbortController();
+            if (workUnitStore.cacheSignal) {
+                // If we have a cacheSignal it means we're in a prospective render. If
+                // the input we're waiting on is coming from another cache, we do want
+                // to wait for it so that we can resolve this cache entry too.
+                workUnitStore.cacheSignal.inputReady().then(()=>{
+                    controller.abort();
+                });
+            } else {
+                // Otherwise we're in the final render and we should already have all
+                // our caches filled.
+                // If the prerender uses stages, we have wait until the runtime stage,
+                // at which point all runtime inputs will be resolved.
+                // (otherwise, a runtime prerender might consider `cookies()` hanging
+                //  even though they'd resolve in the next task.)
+                //
+                // We might still be waiting on some microtasks so we
+                // wait one tick before giving up. When we give up, we still want to
+                // render the content of this cache as deeply as we can so that we can
+                // suspend as deeply as possible in the tree or not at all if we don't
+                // end up waiting for the input.
+                if (workUnitStore.type === 'prerender-runtime' && workUnitStore.stagedRendering) {
+                    const { stagedRendering } = workUnitStore;
+                    stagedRendering.waitForStage((0, _dynamicrenderingutils.getRuntimeStage)(stagedRendering)).then(()=>(0, _scheduler.scheduleOnNextTick)(()=>controller.abort()));
+                } else {
+                    (0, _scheduler.scheduleOnNextTick)(()=>controller.abort());
+                }
+            }
+            return controller.signal;
+        case 'prerender-client':
+        case 'validation-client':
+        case 'prerender-ppr':
+        case 'prerender-legacy':
+        case 'request':
+        case 'cache':
+        case 'private-cache':
+        case 'unstable-cache':
+        case 'generate-static-params':
+            return undefined;
+        default:
+            workUnitStore;
+    }
+}
+function annotateDynamicAccess(expression, prerenderStore) {
+    const dynamicTracking = prerenderStore.dynamicTracking;
+    if (dynamicTracking) {
+        dynamicTracking.dynamicAccesses.push({
+            stack: dynamicTracking.isDebugDynamicAccesses ? new Error().stack : undefined,
+            expression
+        });
+    }
+}
+function useDynamicRouteParams(expression) {
+    const workStore = _workasyncstorageexternal.workAsyncStorage.getStore();
+    const workUnitStore = _workunitasyncstorageexternal.workUnitAsyncStorage.getStore();
+    if (workStore && workUnitStore) {
+        switch(workUnitStore.type){
+            case 'prerender-client':
+            case 'prerender':
+                {
+                    const fallbackParams = workUnitStore.fallbackRouteParams;
+                    if (fallbackParams && fallbackParams.size > 0) {
+                        // We are in a prerender with cacheComponents semantics. We are going to
+                        // hang here and never resolve. This will cause the currently
+                        // rendering component to effectively be a dynamic hole.
+                        _react.default.use((0, _dynamicrenderingutils.makeHangingPromise)(workUnitStore.renderSignal, workStore.route, expression));
+                    }
+                    break;
+                }
+            case 'prerender-ppr':
+                {
+                    const fallbackParams = workUnitStore.fallbackRouteParams;
+                    if (fallbackParams && fallbackParams.size > 0) {
+                        return postponeWithTracking(workStore.route, expression, workUnitStore.dynamicTracking);
+                    }
+                    break;
+                }
+            case 'validation-client':
+                {
+                    break;
+                }
+            case 'prerender-runtime':
+                throw Object.defineProperty(new _invarianterror.InvariantError(`\`${expression}\` was called during a runtime prerender. Next.js should be preventing ${expression} from being included in server components statically, but did not in this case.`), "__NEXT_ERROR_CODE", {
+                    value: "E771",
+                    enumerable: false,
+                    configurable: true
+                });
+            case 'cache':
+            case 'private-cache':
+                throw Object.defineProperty(new _invarianterror.InvariantError(`\`${expression}\` was called inside a cache scope. Next.js should be preventing ${expression} from being included in server components statically, but did not in this case.`), "__NEXT_ERROR_CODE", {
+                    value: "E745",
+                    enumerable: false,
+                    configurable: true
+                });
+            case 'generate-static-params':
+                throw Object.defineProperty(new _invarianterror.InvariantError(`\`${expression}\` was called in \`generateStaticParams\`. Next.js should be preventing ${expression} from being included in server component files statically, but did not in this case.`), "__NEXT_ERROR_CODE", {
+                    value: "E1130",
+                    enumerable: false,
+                    configurable: true
+                });
+            case 'prerender-legacy':
+            case 'request':
+            case 'unstable-cache':
+                break;
+            default:
+                workUnitStore;
+        }
+    }
+}
+function useDynamicSearchParams(expression) {
+    const workStore = _workasyncstorageexternal.workAsyncStorage.getStore();
+    const workUnitStore = _workunitasyncstorageexternal.workUnitAsyncStorage.getStore();
+    if (!workStore) {
+        // We assume pages router context and just return
+        return;
+    }
+    if (!workUnitStore) {
+        (0, _workunitasyncstorageexternal.throwForMissingRequestStore)(expression);
+    }
+    switch(workUnitStore.type){
+        case 'validation-client':
+            // During instant validation we try to behave as close to client as possible,
+            // so this shouldn't hang during SSR.
+            return;
+        case 'prerender-client':
+            {
+                _react.default.use((0, _dynamicrenderingutils.makeHangingPromise)(workUnitStore.renderSignal, workStore.route, expression));
+                break;
+            }
+        case 'prerender-legacy':
+        case 'prerender-ppr':
+            {
+                if (workStore.forceStatic) {
+                    return;
+                }
+                throw Object.defineProperty(new _bailouttocsr.BailoutToCSRError(expression), "__NEXT_ERROR_CODE", {
+                    value: "E394",
+                    enumerable: false,
+                    configurable: true
+                });
+            }
+        case 'prerender':
+        case 'prerender-runtime':
+            throw Object.defineProperty(new _invarianterror.InvariantError(`\`${expression}\` was called from a Server Component. Next.js should be preventing ${expression} from being included in server components statically, but did not in this case.`), "__NEXT_ERROR_CODE", {
+                value: "E795",
+                enumerable: false,
+                configurable: true
+            });
+        case 'cache':
+        case 'unstable-cache':
+        case 'private-cache':
+            throw Object.defineProperty(new _invarianterror.InvariantError(`\`${expression}\` was called inside a cache scope. Next.js should be preventing ${expression} from being included in server components statically, but did not in this case.`), "__NEXT_ERROR_CODE", {
+                value: "E745",
+                enumerable: false,
+                configurable: true
+            });
+        case 'generate-static-params':
+            throw Object.defineProperty(new _invarianterror.InvariantError(`\`${expression}\` was called in \`generateStaticParams\`. Next.js should be preventing ${expression} from being included in server component files statically, but did not in this case.`), "__NEXT_ERROR_CODE", {
+                value: "E1130",
+                enumerable: false,
+                configurable: true
+            });
+        case 'request':
+            return;
+        default:
+            workUnitStore;
+    }
+}
+const hasSuspenseRegex = /\n\s+at Suspense \(<anonymous>\)/;
+// Common implicit body tags that React will treat as body when placed directly in html
+const bodyAndImplicitTags = 'body|div|main|section|article|aside|header|footer|nav|form|p|span|h1|h2|h3|h4|h5|h6';
+// Detects when RootLayoutBoundary (our framework marker component) appears
+// after Suspense in the component stack, indicating the root layout is wrapped
+// within a Suspense boundary. Ensures no body/html/implicit-body components are in between.
+//
+// Example matches:
+//   at Suspense (<anonymous>)
+//   at __next_root_layout_boundary__ (<anonymous>)
+//
+// Or with other components in between (but not body/html/implicit-body):
+//   at Suspense (<anonymous>)
+//   at SomeComponent (<anonymous>)
+//   at __next_root_layout_boundary__ (<anonymous>)
+const hasSuspenseBeforeRootLayoutWithoutBodyOrImplicitBodyRegex = new RegExp(`\\n\\s+at Suspense \\(<anonymous>\\)(?:(?!\\n\\s+at (?:${bodyAndImplicitTags}) \\(<anonymous>\\))[\\s\\S])*?\\n\\s+at ${_boundaryconstants.ROOT_LAYOUT_BOUNDARY_NAME} \\([^\\n]*\\)`);
+const hasMetadataRegex = new RegExp(`\\n\\s+at ${_boundaryconstants.METADATA_BOUNDARY_NAME}[\\n\\s]`);
+const hasViewportRegex = new RegExp(`\\n\\s+at ${_boundaryconstants.VIEWPORT_BOUNDARY_NAME}[\\n\\s]`);
+const hasOutletRegex = new RegExp(`\\n\\s+at ${_boundaryconstants.OUTLET_BOUNDARY_NAME}[\\n\\s]`);
+const hasInstantValidationBoundaryRegex = new RegExp(`\\n\\s+at ${_boundaryconstants1.INSTANT_VALIDATION_BOUNDARY_NAME}[\\n\\s]`);
+function trackAllowedDynamicAccess(workStore, componentStack, dynamicValidation, clientDynamic) {
+    if (hasOutletRegex.test(componentStack)) {
+        // We don't need to track that this is dynamic. It is only so when something else is also dynamic.
+        return;
+    } else if (hasMetadataRegex.test(componentStack)) {
+        dynamicValidation.hasDynamicMetadata = true;
+        return;
+    } else if (hasViewportRegex.test(componentStack)) {
+        dynamicValidation.hasDynamicViewport = true;
+        return;
+    } else if (hasSuspenseBeforeRootLayoutWithoutBodyOrImplicitBodyRegex.test(componentStack)) {
+        // For Suspense within body, the prelude wouldn't be empty so it wouldn't violate the empty static shells rule.
+        // But if you have Suspense above body, the prelude is empty but we allow that because having Suspense
+        // is an explicit signal from the user that they acknowledge the empty shell and want dynamic rendering.
+        dynamicValidation.hasAllowedDynamic = true;
+        dynamicValidation.hasSuspenseAboveBody = true;
+        return;
+    } else if (hasSuspenseRegex.test(componentStack)) {
+        // this error had a Suspense boundary above it so we don't need to report it as a source
+        // of disallowed
+        dynamicValidation.hasAllowedDynamic = true;
+        return;
+    } else if (clientDynamic.syncDynamicErrorWithStack) {
+        // This task was the task that called the sync error.
+        dynamicValidation.dynamicErrors.push(clientDynamic.syncDynamicErrorWithStack);
+        return;
+    } else {
+        const message = `Route "${workStore.route}": Uncached data was accessed outside of ` + '<Suspense>. This delays the entire page from rendering, resulting in a ' + 'slow user experience. Learn more: ' + 'https://nextjs.org/docs/messages/blocking-route';
+        const error = addErrorContext(Object.defineProperty(new Error(message), "__NEXT_ERROR_CODE", {
+            value: "E1079",
+            enumerable: false,
+            configurable: true
+        }), componentStack, null);
+        dynamicValidation.dynamicErrors.push(error);
+        return;
+    }
+}
+var DynamicHoleKind = /*#__PURE__*/ function(DynamicHoleKind) {
+    /** We know that this hole is caused by runtime data. */ DynamicHoleKind[DynamicHoleKind["Runtime"] = 1] = "Runtime";
+    /** We know that this hole is caused by dynamic data. */ DynamicHoleKind[DynamicHoleKind["Dynamic"] = 2] = "Dynamic";
+    return DynamicHoleKind;
+}({});
+function createInstantValidationState(createInstantStack) {
+    return {
+        hasDynamicMetadata: false,
+        hasAllowedClientDynamicAboveBoundary: false,
+        dynamicMetadata: null,
+        hasDynamicViewport: false,
+        hasAllowedDynamic: false,
+        dynamicErrors: [],
+        validationPreventingErrors: [],
+        thrownErrorsOutsideBoundary: [],
+        createInstantStack
+    };
+}
+function trackDynamicHoleInNavigation(workStore, componentStack, dynamicValidation, clientDynamic, kind, boundaryState) {
+    if (hasOutletRegex.test(componentStack)) {
+        // We don't need to track that this is dynamic. It is only so when something else is also dynamic.
+        return;
+    }
+    if (hasMetadataRegex.test(componentStack)) {
+        const usageDescription = kind === 1 ? `Runtime data such as \`cookies()\`, \`headers()\`, \`params\`, or \`searchParams\` was accessed inside \`generateMetadata\` or you have file-based metadata such as icons that depend on dynamic params segments.` : `Uncached data or \`connection()\` was accessed inside \`generateMetadata\`.`;
+        const message = `Route "${workStore.route}": ${usageDescription} Except for this instance, the page would have been entirely prerenderable which may have been the intended behavior. See more info here: https://nextjs.org/docs/messages/next-prerender-dynamic-metadata`;
+        const error = addErrorContext(Object.defineProperty(new Error(message), "__NEXT_ERROR_CODE", {
+            value: "E1076",
+            enumerable: false,
+            configurable: true
+        }), componentStack, dynamicValidation.createInstantStack);
+        dynamicValidation.dynamicMetadata = error;
+        return;
+    }
+    if (hasViewportRegex.test(componentStack)) {
+        const usageDescription = kind === 1 ? `Runtime data such as \`cookies()\`, \`headers()\`, \`params\`, or \`searchParams\` was accessed inside \`generateViewport\`.` : `Uncached data or \`connection()\` was accessed inside \`generateViewport\`.`;
+        const message = `Route "${workStore.route}": ${usageDescription} This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/next-prerender-dynamic-viewport`;
+        const error = addErrorContext(Object.defineProperty(new Error(message), "__NEXT_ERROR_CODE", {
+            value: "E1086",
+            enumerable: false,
+            configurable: true
+        }), componentStack, dynamicValidation.createInstantStack);
+        dynamicValidation.dynamicErrors.push(error);
+        return;
+    }
+    const boundaryLocation = hasInstantValidationBoundaryRegex.exec(componentStack);
+    if (!boundaryLocation) {
+        // We don't see the validation boundary in the component stack,
+        // so this hole must be coming from a shared parent.
+        // Shared parents are fully resolved and don't have RSC holes,
+        // but they can still suspend in a client component during SSR.
+        // If we managed to render all the validation boundaries, that means
+        // that the client holes aren't blocking validation and we can disregard them.
+        // Note that we don't even care whether they have suspense or not.
+        if (boundaryState.expectedIds.size === boundaryState.renderedIds.size) {
+            dynamicValidation.hasAllowedClientDynamicAboveBoundary = true;
+            dynamicValidation.hasAllowedDynamic = true // Holes outside the boundary contribute to allowing dynamic metadata
+            ;
+            return;
+        } else {
+            // TODO(instant-validation) TODO(NAR-787)
+            // If shared parents blocked us from validating, we should only log
+            // the errors from the innermost (segments), i.e. omit layouts whose
+            // slots managed to render (because clearly they didn't block validation)
+            const message = `Route "${workStore.route}": Could not validate \`unstable_instant\` because a Client Component in a parent segment prevented the page from rendering.`;
+            const error = addErrorContext(Object.defineProperty(new Error(message), "__NEXT_ERROR_CODE", {
+                value: "E1082",
+                enumerable: false,
+                configurable: true
+            }), componentStack, dynamicValidation.createInstantStack);
+            dynamicValidation.validationPreventingErrors.push(error);
+            return;
+        }
+    } else {
+        // The hole originates inside the validation boundary.
+        //
+        // Check if we have a Suspense above the hole, but below the validation boundary.
+        // If we do, then this dynamic usage wouldn't block a navigation to this subtree.
+        // Conversely, if the nearest suspense is above the validation boundary, then this subtree would block.
+        //
+        // Note that in the component stack, children come before parents.
+        //
+        // Valid:
+        //   ...
+        //   at Suspense
+        //   ...
+        //   at __next_prefetch_validation_boundary__
+        //
+        // Invalid:
+        //   ...
+        //   at __next_prefetch_validation_boundary__
+        //   ...
+        //   at Suspense
+        //
+        const suspenseLocation = hasSuspenseRegex.exec(componentStack);
+        if (suspenseLocation) {
+            if (suspenseLocation.index < boundaryLocation.index) {
+                dynamicValidation.hasAllowedDynamic = true;
+                return;
+            } else {
+            // invalid - fallthrough
+            }
+        }
+    }
+    if (clientDynamic.syncDynamicErrorWithStack) {
+        // This task was the task that called the sync error.
+        const syncError = clientDynamic.syncDynamicErrorWithStack;
+        if (dynamicValidation.createInstantStack !== null && syncError.cause === undefined) {
+            syncError.cause = dynamicValidation.createInstantStack();
+        }
+        dynamicValidation.dynamicErrors.push(syncError);
+        return;
+    }
+    const usageDescription = kind === 1 ? `Runtime data such as \`cookies()\`, \`headers()\`, \`params\`, or \`searchParams\` was accessed outside of \`<Suspense>\`.` : `Uncached data or \`connection()\` was accessed outside of \`<Suspense>\`.`;
+    const message = `Route "${workStore.route}": ${usageDescription} This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route`;
+    const error = addErrorContext(Object.defineProperty(new Error(message), "__NEXT_ERROR_CODE", {
+        value: "E1078",
+        enumerable: false,
+        configurable: true
+    }), componentStack, dynamicValidation.createInstantStack);
+    dynamicValidation.dynamicErrors.push(error);
+    return;
+}
+function trackThrownErrorInNavigation(workStore, dynamicValidation, thrownValue, componentStack) {
+    const boundaryLocation = hasInstantValidationBoundaryRegex.exec(componentStack);
+    if (!boundaryLocation) {
+        // There's no validation boundary on the component stack.
+        // This error may have blocked a boundary from rendering.
+        // Wrap the error to provide component context.
+        // This helps for errors from node_modules which would otherwise
+        // have no useful stack information due to ignore-listing,
+        // e.g. next/dynamic with `ssr: false`.
+        const error = addErrorContext(Object.defineProperty(new Error('An error occurred while attempting to validate instant UI. This error may be preventing the validation from completing.', {
+            cause: thrownValue
+        }), "__NEXT_ERROR_CODE", {
+            value: "E1118",
+            enumerable: false,
+            configurable: true
+        }), componentStack, null);
+        dynamicValidation.thrownErrorsOutsideBoundary.push(error);
+    } else {
+        // There's validation boundary on the component stack,
+        // so we know this error didn't block a validation boundary from rendering.
+        // However, this error might be hiding be hiding dynamic content that would
+        // cause validation to fail.
+        const suspenseLocation = hasSuspenseRegex.exec(componentStack);
+        if (suspenseLocation) {
+            if (suspenseLocation.index < boundaryLocation.index) {
+                // There's a Suspense below the validation boundary but above this error's location.
+                // This subtree can't fail instant validation because any potential
+                // dynamic holes would be guarded by the Suspense anyway,
+                // so we can allow this.
+                return;
+            } else {
+            // invalid - fallthrough
+            }
+        }
+        const message = `Route "${workStore.route}": Could not validate \`unstable_instant\` because an error prevented the target segment from rendering.`;
+        const error = addErrorContext(Object.defineProperty(new Error(message, {
+            cause: thrownValue
+        }), "__NEXT_ERROR_CODE", {
+            value: "E1112",
+            enumerable: false,
+            configurable: true
+        }), componentStack, null // TODO(instant-validation-build): conflicting use of cause
+        );
+        dynamicValidation.validationPreventingErrors.push(error);
+    }
+}
+function trackDynamicHoleInRuntimeShell(workStore, componentStack, dynamicValidation, clientDynamic) {
+    if (hasOutletRegex.test(componentStack)) {
+        // We don't need to track that this is dynamic. It is only so when something else is also dynamic.
+        return;
+    } else if (hasMetadataRegex.test(componentStack)) {
+        const message = `Route "${workStore.route}": Uncached data or \`connection()\` was accessed inside \`generateMetadata\`. Except for this instance, the page would have been entirely prerenderable which may have been the intended behavior. See more info here: https://nextjs.org/docs/messages/next-prerender-dynamic-metadata`;
+        const error = addErrorContext(Object.defineProperty(new Error(message), "__NEXT_ERROR_CODE", {
+            value: "E1080",
+            enumerable: false,
+            configurable: true
+        }), componentStack, null);
+        dynamicValidation.dynamicMetadata = error;
+        return;
+    } else if (hasViewportRegex.test(componentStack)) {
+        // TODO(instant-validation): If the page only has holes caused by runtime data,
+        // we won't find out if there's a suspense-above-body and error for dynamic viewport
+        // even if there is in fact a suspense-above-body
+        const message = `Route "${workStore.route}": Uncached data or \`connection()\` was accessed inside \`generateViewport\`. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/next-prerender-dynamic-viewport`;
+        const error = addErrorContext(Object.defineProperty(new Error(message), "__NEXT_ERROR_CODE", {
+            value: "E1077",
+            enumerable: false,
+            configurable: true
+        }), componentStack, null);
+        dynamicValidation.dynamicErrors.push(error);
+        return;
+    } else if (hasSuspenseBeforeRootLayoutWithoutBodyOrImplicitBodyRegex.test(componentStack)) {
+        // For Suspense within body, the prelude wouldn't be empty so it wouldn't violate the empty static shells rule.
+        // But if you have Suspense above body, the prelude is empty but we allow that because having Suspense
+        // is an explicit signal from the user that they acknowledge the empty shell and want dynamic rendering.
+        dynamicValidation.hasAllowedDynamic = true;
+        dynamicValidation.hasSuspenseAboveBody = true;
+        return;
+    } else if (hasSuspenseRegex.test(componentStack)) {
+        // this error had a Suspense boundary above it so we don't need to report it as a source
+        // of disallowed
+        dynamicValidation.hasAllowedDynamic = true;
+        return;
+    } else if (clientDynamic.syncDynamicErrorWithStack) {
+        // This task was the task that called the sync error.
+        dynamicValidation.dynamicErrors.push(clientDynamic.syncDynamicErrorWithStack);
+        return;
+    }
+    const message = `Route "${workStore.route}": Uncached data or \`connection()\` was accessed outside of \`<Suspense>\`. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route`;
+    const error = addErrorContext(Object.defineProperty(new Error(message), "__NEXT_ERROR_CODE", {
+        value: "E1084",
+        enumerable: false,
+        configurable: true
+    }), componentStack, null);
+    dynamicValidation.dynamicErrors.push(error);
+    return;
+}
+function trackDynamicHoleInStaticShell(workStore, componentStack, dynamicValidation, clientDynamic) {
+    if (hasOutletRegex.test(componentStack)) {
+        // We don't need to track that this is dynamic. It is only so when something else is also dynamic.
+        return;
+    } else if (hasMetadataRegex.test(componentStack)) {
+        const message = `Route "${workStore.route}": Runtime data such as \`cookies()\`, \`headers()\`, \`params\`, or \`searchParams\` was accessed inside \`generateMetadata\` or you have file-based metadata such as icons that depend on dynamic params segments. Except for this instance, the page would have been entirely prerenderable which may have been the intended behavior. See more info here: https://nextjs.org/docs/messages/next-prerender-dynamic-metadata`;
+        const error = addErrorContext(Object.defineProperty(new Error(message), "__NEXT_ERROR_CODE", {
+            value: "E1085",
+            enumerable: false,
+            configurable: true
+        }), componentStack, null);
+        dynamicValidation.dynamicMetadata = error;
+        return;
+    } else if (hasViewportRegex.test(componentStack)) {
+        const message = `Route "${workStore.route}": Runtime data such as \`cookies()\`, \`headers()\`, \`params\`, or \`searchParams\` was accessed inside \`generateViewport\`. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/next-prerender-dynamic-viewport`;
+        const error = addErrorContext(Object.defineProperty(new Error(message), "__NEXT_ERROR_CODE", {
+            value: "E1081",
+            enumerable: false,
+            configurable: true
+        }), componentStack, null);
+        dynamicValidation.dynamicErrors.push(error);
+        return;
+    } else if (hasSuspenseBeforeRootLayoutWithoutBodyOrImplicitBodyRegex.test(componentStack)) {
+        // For Suspense within body, the prelude wouldn't be empty so it wouldn't violate the empty static shells rule.
+        // But if you have Suspense above body, the prelude is empty but we allow that because having Suspense
+        // is an explicit signal from the user that they acknowledge the empty shell and want dynamic rendering.
+        dynamicValidation.hasAllowedDynamic = true;
+        dynamicValidation.hasSuspenseAboveBody = true;
+        return;
+    } else if (hasSuspenseRegex.test(componentStack)) {
+        // this error had a Suspense boundary above it so we don't need to report it as a source
+        // of disallowed
+        dynamicValidation.hasAllowedDynamic = true;
+        return;
+    } else if (clientDynamic.syncDynamicErrorWithStack) {
+        // This task was the task that called the sync error.
+        dynamicValidation.dynamicErrors.push(clientDynamic.syncDynamicErrorWithStack);
+        return;
+    } else {
+        const message = `Route "${workStore.route}": Runtime data such as \`cookies()\`, \`headers()\`, \`params\`, or \`searchParams\` was accessed outside of \`<Suspense>\`. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route`;
+        const error = addErrorContext(Object.defineProperty(new Error(message), "__NEXT_ERROR_CODE", {
+            value: "E1083",
+            enumerable: false,
+            configurable: true
+        }), componentStack, null);
+        dynamicValidation.dynamicErrors.push(error);
+        return;
+    }
+}
+/**
+ * In dev mode, we prefer using the owner stack, otherwise the provided
+ * component stack is used.
+ *
+ * Accepts an already-created Error so the SWC error-code plugin can see the
+ * `new Error(...)` call at each call site and auto-assign error codes.
+ */ function addErrorContext(error, componentStack, createInstantStack) {
+    const ownerStack = ("TURBOPACK compile-time value", "development") !== 'production' && _react.default.captureOwnerStack ? _react.default.captureOwnerStack() : null;
+    if (createInstantStack !== null) {
+        error.cause = createInstantStack();
+    }
+    // TODO go back to owner stack here if available. This is temporarily using componentStack to get the right
+    //
+    error.stack = error.name + ': ' + error.message + (ownerStack || componentStack);
+    return error;
+}
+var PreludeState = /*#__PURE__*/ function(PreludeState) {
+    PreludeState[PreludeState["Full"] = 0] = "Full";
+    PreludeState[PreludeState["Empty"] = 1] = "Empty";
+    PreludeState[PreludeState["Errored"] = 2] = "Errored";
+    return PreludeState;
+}({});
+function logDisallowedDynamicError(workStore, error) {
+    console.error(error);
+    if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+    ;
+    else if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+    ;
+}
+function throwIfDisallowedDynamic(workStore, prelude, dynamicValidation, serverDynamic) {
+    if (serverDynamic.syncDynamicErrorWithStack) {
+        logDisallowedDynamicError(workStore, serverDynamic.syncDynamicErrorWithStack);
+        throw new _staticgenerationbailout.StaticGenBailoutError();
+    }
+    if (prelude !== 0) {
+        if (dynamicValidation.hasSuspenseAboveBody) {
+            // This route has opted into allowing fully dynamic rendering
+            // by including a Suspense boundary above the body. In this case
+            // a lack of a shell is not considered disallowed so we simply return
+            return;
+        }
+        // We didn't have any sync bailouts but there may be user code which
+        // blocked the root. We would have captured these during the prerender
+        // and can log them here and then terminate the build/validating render
+        const dynamicErrors = dynamicValidation.dynamicErrors;
+        if (dynamicErrors.length > 0) {
+            for(let i = 0; i < dynamicErrors.length; i++){
+                logDisallowedDynamicError(workStore, dynamicErrors[i]);
+            }
+            throw new _staticgenerationbailout.StaticGenBailoutError();
+        }
+        // If we got this far then the only other thing that could be blocking
+        // the root is dynamic Viewport. If this is dynamic then
+        // you need to opt into that by adding a Suspense boundary above the body
+        // to indicate your are ok with fully dynamic rendering.
+        if (dynamicValidation.hasDynamicViewport) {
+            console.error(`Route "${workStore.route}" has a \`generateViewport\` that depends on Request data (\`cookies()\`, etc...) or uncached external data (\`fetch(...)\`, etc...) without explicitly allowing fully dynamic rendering. See more info here: https://nextjs.org/docs/messages/next-prerender-dynamic-viewport`);
+            throw new _staticgenerationbailout.StaticGenBailoutError();
+        }
+        if (prelude === 1) {
+            // If we ever get this far then we messed up the tracking of invalid dynamic.
+            // We still adhere to the constraint that you must produce a shell but invite the
+            // user to report this as a bug in Next.js.
+            console.error(`Route "${workStore.route}" did not produce a static shell and Next.js was unable to determine a reason. This is a bug in Next.js.`);
+            throw new _staticgenerationbailout.StaticGenBailoutError();
+        }
+    } else {
+        if (dynamicValidation.hasAllowedDynamic === false && dynamicValidation.hasDynamicMetadata) {
+            console.error(`Route "${workStore.route}" has a \`generateMetadata\` that depends on Request data (\`cookies()\`, etc...) or uncached external data (\`fetch(...)\`, etc...) when the rest of the route does not. See more info here: https://nextjs.org/docs/messages/next-prerender-dynamic-metadata`);
+            throw new _staticgenerationbailout.StaticGenBailoutError();
+        }
+    }
+}
+function getStaticShellDisallowedDynamicReasons(workStore, prelude, dynamicValidation, configAllowsBlocking) {
+    if (configAllowsBlocking || dynamicValidation.hasSuspenseAboveBody) {
+        // This route has opted into allowing fully dynamic rendering
+        // by including a Suspense boundary above the body. In this case
+        // a lack of a shell is not considered disallowed so we simply return
+        return [];
+    }
+    if (prelude !== 0) {
+        // We didn't have any sync bailouts but there may be user code which
+        // blocked the root. We would have captured these during the prerender
+        // and can log them here and then terminate the build/validating render
+        const dynamicErrors = dynamicValidation.dynamicErrors;
+        if (dynamicErrors.length > 0) {
+            return dynamicErrors;
+        }
+        if (prelude === 1) {
+            // If we ever get this far then we messed up the tracking of invalid dynamic.
+            // We still adhere to the constraint that you must produce a shell but invite the
+            // user to report this as a bug in Next.js.
+            return [
+                Object.defineProperty(new _invarianterror.InvariantError(`Route "${workStore.route}" did not produce a static shell and Next.js was unable to determine a reason.`), "__NEXT_ERROR_CODE", {
+                    value: "E936",
+                    enumerable: false,
+                    configurable: true
+                })
+            ];
+        }
+    } else {
+        // We have a prelude but we might still have dynamic metadata without any other dynamic access
+        if (dynamicValidation.hasAllowedDynamic === false && dynamicValidation.dynamicErrors.length === 0 && dynamicValidation.dynamicMetadata) {
+            return [
+                dynamicValidation.dynamicMetadata
+            ];
+        }
+    }
+    // We had a non-empty prelude and there are no dynamic holes
+    return [];
+}
+function getNavigationDisallowedDynamicReasons(workStore, prelude, dynamicValidation, validationSampleTracking, boundaryState) {
+    // If we have errors related to missing samples, those should take precedence over everything else.
+    if (validationSampleTracking) {
+        const { missingSampleErrors } = validationSampleTracking;
+        if (missingSampleErrors.length > 0) {
+            return missingSampleErrors;
+        }
+    }
+    const { validationPreventingErrors } = dynamicValidation;
+    if (validationPreventingErrors.length > 0) {
+        return validationPreventingErrors;
+    }
+    if (boundaryState.renderedIds.size < boundaryState.expectedIds.size) {
+        const { thrownErrorsOutsideBoundary, createInstantStack } = dynamicValidation;
+        if (thrownErrorsOutsideBoundary.length === 0) {
+            const message = `Route "${workStore.route}": Could not validate \`unstable_instant\` because the target segment was prevented from rendering for an unknown reason.`;
+            const error = createInstantStack !== null ? createInstantStack() : new Error();
+            error.name = 'Error';
+            error.message = message;
+            return [
+                error
+            ];
+        } else if (thrownErrorsOutsideBoundary.length === 1) {
+            const message = `Route "${workStore.route}": Could not validate \`unstable_instant\` because the target segment was prevented from rendering, likely due to the following error.`;
+            const error = createInstantStack !== null ? createInstantStack() : new Error();
+            error.name = 'Error';
+            error.message = message;
+            return [
+                error,
+                thrownErrorsOutsideBoundary[0]
+            ];
+        } else {
+            const message = `Route "${workStore.route}": Could not validate \`unstable_instant\` because the target segment was prevented from rendering, likely due to one of the following errors.`;
+            const error = createInstantStack !== null ? createInstantStack() : new Error();
+            error.name = 'Error';
+            error.message = message;
+            return [
+                error,
+                ...thrownErrorsOutsideBoundary
+            ];
+        }
+    }
+    // NOTE: We don't care about Suspense above body here,
+    // we're only concerned with the validation boundary
+    if (prelude !== 0) {
+        const dynamicErrors = dynamicValidation.dynamicErrors;
+        if (dynamicErrors.length > 0) {
+            return dynamicErrors;
+        }
+        if (prelude === 1) {
+            // If a client component suspended prevented us from rendering a shell
+            // but didn't block validation, we don't require a prelude.
+            if (dynamicValidation.hasAllowedClientDynamicAboveBoundary) {
+                return [];
+            }
+            // If we ever get this far then we messed up the tracking of invalid dynamic.
+            return [
+                Object.defineProperty(new _invarianterror.InvariantError(`Route "${workStore.route}" failed to render during instant validation and Next.js was unable to determine a reason.`), "__NEXT_ERROR_CODE", {
+                    value: "E1055",
+                    enumerable: false,
+                    configurable: true
+                })
+            ];
+        }
+    } else {
+        const dynamicErrors = dynamicValidation.dynamicErrors;
+        if (dynamicErrors.length > 0) {
+            return dynamicErrors;
+        }
+        if (dynamicValidation.hasAllowedDynamic === false && dynamicValidation.dynamicMetadata) {
+            return [
+                dynamicValidation.dynamicMetadata
+            ];
+        }
+    }
+    // We had a non-empty prelude and there are no dynamic holes
+    return [];
+}
+}),
+"[project]/node_modules/next/dist/server/request/utils.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+0 && (module.exports = {
+    isRequestAPICallableInsideAfter: null,
+    throwForSearchParamsAccessInUseCache: null,
+    throwWithStaticGenerationBailoutErrorWithDynamicError: null
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: all[name]
+    });
+}
+_export(exports, {
+    isRequestAPICallableInsideAfter: function() {
+        return isRequestAPICallableInsideAfter;
+    },
+    throwForSearchParamsAccessInUseCache: function() {
+        return throwForSearchParamsAccessInUseCache;
+    },
+    throwWithStaticGenerationBailoutErrorWithDynamicError: function() {
+        return throwWithStaticGenerationBailoutErrorWithDynamicError;
+    }
+});
+const _staticgenerationbailout = __turbopack_context__.r("[project]/node_modules/next/dist/client/components/static-generation-bailout.js [app-route] (ecmascript)");
+const _aftertaskasyncstorageexternal = __turbopack_context__.r("[externals]/next/dist/server/app-render/after-task-async-storage.external.js [external] (next/dist/server/app-render/after-task-async-storage.external.js, cjs)");
+function throwWithStaticGenerationBailoutErrorWithDynamicError(route, expression) {
+    throw Object.defineProperty(new _staticgenerationbailout.StaticGenBailoutError(`Route ${route} with \`dynamic = "error"\` couldn't be rendered statically because it used ${expression}. See more info here: https://nextjs.org/docs/app/building-your-application/rendering/static-and-dynamic#dynamic-rendering`), "__NEXT_ERROR_CODE", {
+        value: "E543",
+        enumerable: false,
+        configurable: true
+    });
+}
+function throwForSearchParamsAccessInUseCache(workStore, constructorOpt) {
+    const error = Object.defineProperty(new Error(`Route ${workStore.route} used \`searchParams\` inside "use cache". Accessing dynamic request data inside a cache scope is not supported. If you need some search params inside a cached function await \`searchParams\` outside of the cached function and pass only the required search params as arguments to the cached function. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache`), "__NEXT_ERROR_CODE", {
+        value: "E842",
+        enumerable: false,
+        configurable: true
+    });
+    Error.captureStackTrace(error, constructorOpt);
+    workStore.invalidDynamicUsageError ??= error;
+    throw error;
+}
+function isRequestAPICallableInsideAfter() {
+    const afterTaskStore = _aftertaskasyncstorageexternal.afterTaskAsyncStorage.getStore();
+    return (afterTaskStore == null ? void 0 : afterTaskStore.rootTaskSpawnPhase) === 'action';
+}
+}),
+"[project]/node_modules/next/dist/server/request/connection.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "connection", {
+    enumerable: true,
+    get: function() {
+        return connection;
+    }
+});
+const _workasyncstorageexternal = __turbopack_context__.r("[externals]/next/dist/server/app-render/work-async-storage.external.js [external] (next/dist/server/app-render/work-async-storage.external.js, cjs)");
+const _workunitasyncstorageexternal = __turbopack_context__.r("[externals]/next/dist/server/app-render/work-unit-async-storage.external.js [external] (next/dist/server/app-render/work-unit-async-storage.external.js, cjs)");
+const _dynamicrendering = __turbopack_context__.r("[project]/node_modules/next/dist/server/app-render/dynamic-rendering.js [app-route] (ecmascript)");
+const _staticgenerationbailout = __turbopack_context__.r("[project]/node_modules/next/dist/client/components/static-generation-bailout.js [app-route] (ecmascript)");
+const _dynamicrenderingutils = __turbopack_context__.r("[project]/node_modules/next/dist/server/dynamic-rendering-utils.js [app-route] (ecmascript)");
+const _utils = __turbopack_context__.r("[project]/node_modules/next/dist/server/request/utils.js [app-route] (ecmascript)");
+const _stagedrendering = __turbopack_context__.r("[project]/node_modules/next/dist/server/app-render/staged-rendering.js [app-route] (ecmascript)");
+const _invarianterror = __turbopack_context__.r("[project]/node_modules/next/dist/shared/lib/invariant-error.js [app-route] (ecmascript)");
+function connection() {
+    const callingExpression = 'connection';
+    const workStore = _workasyncstorageexternal.workAsyncStorage.getStore();
+    const workUnitStore = _workunitasyncstorageexternal.workUnitAsyncStorage.getStore();
+    if (workStore) {
+        if (workUnitStore && workUnitStore.phase === 'after' && !(0, _utils.isRequestAPICallableInsideAfter)()) {
+            throw Object.defineProperty(new Error(`Route ${workStore.route} used \`connection()\` inside \`after()\`. The \`connection()\` function is used to indicate the subsequent code must only run when there is an actual Request, but \`after()\` executes after the request, so this function is not allowed in this scope. See more info here: https://nextjs.org/docs/canary/app/api-reference/functions/after`), "__NEXT_ERROR_CODE", {
+                value: "E827",
+                enumerable: false,
+                configurable: true
+            });
+        }
+        if (workStore.forceStatic) {
+            // When using forceStatic, we override all other logic and always just
+            // return a resolving promise without tracking.
+            return Promise.resolve(undefined);
+        }
+        if (workStore.dynamicShouldError) {
+            throw Object.defineProperty(new _staticgenerationbailout.StaticGenBailoutError(`Route ${workStore.route} with \`dynamic = "error"\` couldn't be rendered statically because it used \`connection()\`. See more info here: https://nextjs.org/docs/app/building-your-application/rendering/static-and-dynamic#dynamic-rendering`), "__NEXT_ERROR_CODE", {
+                value: "E847",
+                enumerable: false,
+                configurable: true
+            });
+        }
+        if (workUnitStore) {
+            switch(workUnitStore.type){
+                case 'cache':
+                    {
+                        const error = Object.defineProperty(new Error(`Route ${workStore.route} used \`connection()\` inside "use cache". The \`connection()\` function is used to indicate the subsequent code must only run when there is an actual request, but caches must be able to be produced before a request, so this function is not allowed in this scope. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache`), "__NEXT_ERROR_CODE", {
+                            value: "E841",
+                            enumerable: false,
+                            configurable: true
+                        });
+                        Error.captureStackTrace(error, connection);
+                        workStore.invalidDynamicUsageError ??= error;
+                        throw error;
+                    }
+                case 'private-cache':
+                    {
+                        // It might not be intuitive to throw for private caches as well, but
+                        // we don't consider runtime prefetches as "actual requests" (in the
+                        // navigation sense), despite allowing them to read cookies.
+                        const error = Object.defineProperty(new Error(`Route ${workStore.route} used \`connection()\` inside "use cache: private". The \`connection()\` function is used to indicate the subsequent code must only run when there is an actual navigation request, but caches must be able to be produced before a navigation request, so this function is not allowed in this scope. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache`), "__NEXT_ERROR_CODE", {
+                            value: "E837",
+                            enumerable: false,
+                            configurable: true
+                        });
+                        Error.captureStackTrace(error, connection);
+                        workStore.invalidDynamicUsageError ??= error;
+                        throw error;
+                    }
+                case 'unstable-cache':
+                    throw Object.defineProperty(new Error(`Route ${workStore.route} used \`connection()\` inside a function cached with \`unstable_cache()\`. The \`connection()\` function is used to indicate the subsequent code must only run when there is an actual Request, but caches must be able to be produced before a Request so this function is not allowed in this scope. See more info here: https://nextjs.org/docs/app/api-reference/functions/unstable_cache`), "__NEXT_ERROR_CODE", {
+                        value: "E840",
+                        enumerable: false,
+                        configurable: true
+                    });
+                case 'generate-static-params':
+                    throw Object.defineProperty(new Error(`Route ${workStore.route} used \`connection()\` inside \`generateStaticParams\`. This is not supported because \`generateStaticParams\` runs at build time without an HTTP request. Read more: https://nextjs.org/docs/messages/next-dynamic-api-wrong-context`), "__NEXT_ERROR_CODE", {
+                        value: "E1125",
+                        enumerable: false,
+                        configurable: true
+                    });
+                case 'prerender':
+                case 'prerender-client':
+                case 'prerender-runtime':
+                    // We return a promise that never resolves to allow the prerender to
+                    // stall at this point.
+                    return (0, _dynamicrenderingutils.makeHangingPromise)(workUnitStore.renderSignal, workStore.route, '`connection()`');
+                case 'validation-client':
+                    {
+                        // TODO(NAR-789): make this consistent with the actual browser behavior when we change it.
+                        // Until then, erroring is fine.
+                        const exportName = '`connection`';
+                        throw Object.defineProperty(new _invarianterror.InvariantError(`${exportName} must not be used within a Client Component. Next.js should be preventing ${exportName} from being included in Client Components statically, but did not in this case.`), "__NEXT_ERROR_CODE", {
+                            value: "E1063",
+                            enumerable: false,
+                            configurable: true
+                        });
+                    }
+                case 'prerender-ppr':
+                    // We use React's postpone API to interrupt rendering here to create a
+                    // dynamic hole
+                    return (0, _dynamicrendering.postponeWithTracking)(workStore.route, 'connection', workUnitStore.dynamicTracking);
+                case 'prerender-legacy':
+                    // We throw an error here to interrupt prerendering to mark the route
+                    // as dynamic
+                    return (0, _dynamicrendering.throwToInterruptStaticGeneration)('connection', workStore, workUnitStore);
+                case 'request':
+                    (0, _dynamicrendering.trackDynamicDataInDynamicRender)(workUnitStore);
+                    if ("TURBOPACK compile-time truthy", 1) {
+                        // Semantically we only need the dev tracking when running in `next dev`
+                        // but since you would never use next dev with production NODE_ENV we use this
+                        // as a proxy so we can statically exclude this code from production builds.
+                        if (workUnitStore.asyncApiPromises) {
+                            return workUnitStore.asyncApiPromises.connection;
+                        }
+                        return (0, _dynamicrenderingutils.makeDevtoolsIOAwarePromise)(undefined, workUnitStore, _stagedrendering.RenderStage.Dynamic);
+                    } else //TURBOPACK unreachable
+                    ;
+                default:
+                    workUnitStore;
+            }
+        }
+    }
+    // If we end up here, there was no work store or work unit store present.
+    // TODO(NAR-789): connection() is not currently statically prevented from being imported in client components,
+    // so we always error about a missing work unit store.
+    (0, _workunitasyncstorageexternal.throwForMissingRequestStore)(callingExpression);
+}
+}),
+"[project]/node_modules/next/server.js [app-route] (ecmascript)", ((__turbopack_context__, module, exports) => {
+
+const serverExports = {
+    NextRequest: __turbopack_context__.r("[project]/node_modules/next/dist/server/web/spec-extension/request.js [app-route] (ecmascript)").NextRequest,
+    NextResponse: __turbopack_context__.r("[project]/node_modules/next/dist/server/web/spec-extension/response.js [app-route] (ecmascript)").NextResponse,
+    ImageResponse: __turbopack_context__.r("[project]/node_modules/next/dist/server/web/spec-extension/image-response.js [app-route] (ecmascript)").ImageResponse,
+    userAgentFromString: __turbopack_context__.r("[project]/node_modules/next/dist/server/web/spec-extension/user-agent.js [app-route] (ecmascript)").userAgentFromString,
+    userAgent: __turbopack_context__.r("[project]/node_modules/next/dist/server/web/spec-extension/user-agent.js [app-route] (ecmascript)").userAgent,
+    URLPattern: __turbopack_context__.r("[project]/node_modules/next/dist/server/web/spec-extension/url-pattern.js [app-route] (ecmascript)").URLPattern,
+    after: __turbopack_context__.r("[project]/node_modules/next/dist/server/after/index.js [app-route] (ecmascript)").after,
+    connection: __turbopack_context__.r("[project]/node_modules/next/dist/server/request/connection.js [app-route] (ecmascript)").connection
+};
+// https://nodejs.org/api/esm.html#commonjs-namespaces
+// When importing CommonJS modules, the module.exports object is provided as the default export
+module.exports = serverExports;
+// make import { xxx } from 'next/server' work
+exports.NextRequest = serverExports.NextRequest;
+exports.NextResponse = serverExports.NextResponse;
+exports.ImageResponse = serverExports.ImageResponse;
+exports.userAgentFromString = serverExports.userAgentFromString;
+exports.userAgent = serverExports.userAgent;
+exports.URLPattern = serverExports.URLPattern;
+exports.after = serverExports.after;
+exports.connection = serverExports.connection;
+}),
+"[externals]/pg [external] (pg, esm_import, [project]/node_modules/pg)", ((__turbopack_context__) => {
+"use strict";
+
+return __turbopack_context__.a(async (__turbopack_handle_async_dependencies__, __turbopack_async_result__) => { try {
+
+const mod = await __turbopack_context__.y("pg-587764f78a6c7a9c");
+
+__turbopack_context__.n(mod);
+__turbopack_async_result__();
+} catch(e) { __turbopack_async_result__(e); } }, true);}),
+"[project]/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/src/app/api/offers/route.ts [app-route] (ecmascript)\" } [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+return __turbopack_context__.a(async (__turbopack_handle_async_dependencies__, __turbopack_async_result__) => { try {
+
+__turbopack_context__.s([
+    "handler",
+    ()=>handler,
+    "patchFetch",
+    ()=>patchFetch,
+    "routeModule",
+    ()=>routeModule,
+    "serverHooks",
+    ()=>serverHooks,
+    "workAsyncStorage",
+    ()=>workAsyncStorage,
+    "workUnitAsyncStorage",
+    ()=>workUnitAsyncStorage
+]);
+(()=>{
+    const e = new Error("Cannot find module 'next/dist/esm/server/route-modules/app-route/module.compiled'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+(()=>{
+    const e = new Error("Cannot find module 'next/dist/esm/server/route-kind'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+(()=>{
+    const e = new Error("Cannot find module 'next/dist/esm/server/lib/patch-fetch'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$request$2d$meta$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/server/request-meta.js [app-route] (ecmascript)");
+(()=>{
+    const e = new Error("Cannot find module 'next/dist/esm/server/lib/trace/tracer'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+(()=>{
+    const e = new Error("Cannot find module 'next/dist/esm/server/app-render/manifests-singleton'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$shared$2f$lib$2f$router$2f$utils$2f$app$2d$paths$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/shared/lib/router/utils/app-paths.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$base$2d$http$2f$node$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/server/base-http/node.js [app-route] (ecmascript)");
+(()=>{
+    const e = new Error("Cannot find module 'next/dist/esm/server/web/spec-extension/adapters/next-request'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+(()=>{
+    const e = new Error("Cannot find module 'next/dist/esm/server/lib/trace/constants'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+(()=>{
+    const e = new Error("Cannot find module 'next/dist/esm/server/instrumentation/utils'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+(()=>{
+    const e = new Error("Cannot find module 'next/dist/esm/server/send-response'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+(()=>{
+    const e = new Error("Cannot find module 'next/dist/esm/server/web/utils'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+(()=>{
+    const e = new Error("Cannot find module 'next/dist/esm/server/lib/cache-control'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$constants$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/lib/constants.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$externals$5d2f$next$2f$dist$2f$shared$2f$lib$2f$no$2d$fallback$2d$error$2e$external$2e$js__$5b$external$5d$__$28$next$2f$dist$2f$shared$2f$lib$2f$no$2d$fallback$2d$error$2e$external$2e$js$2c$__cjs$29$__ = __turbopack_context__.i("[externals]/next/dist/shared/lib/no-fallback-error.external.js [external] (next/dist/shared/lib/no-fallback-error.external.js, cjs)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/server/response-cache/index.js [app-route] (ecmascript) <locals>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$types$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/server/response-cache/types.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$app$2f$api$2f$offers$2f$route$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/app/api/offers/route.ts [app-route] (ecmascript)");
+var __turbopack_async_dependencies__ = __turbopack_handle_async_dependencies__([
+    __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$app$2f$api$2f$offers$2f$route$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__
+]);
+[__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$app$2f$api$2f$offers$2f$route$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__] = __turbopack_async_dependencies__.then ? (await __turbopack_async_dependencies__)() : __turbopack_async_dependencies__;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+// We inject the nextConfigOutput here so that we can use them in the route
+// module.
+const nextConfigOutput = "";
+const routeModule = new AppRouteRouteModule({
+    definition: {
+        kind: RouteKind.APP_ROUTE,
+        page: "/api/offers/route",
+        pathname: "/api/offers",
+        filename: "route",
+        bundlePath: ""
+    },
+    distDir: ("TURBOPACK compile-time value", ".next/dev") || '',
+    relativeProjectDir: ("TURBOPACK compile-time value", "") || '',
+    resolvedPagePath: "[project]/src/app/api/offers/route.ts",
+    nextConfigOutput,
+    // The static import is used for initialization (methods, dynamic, etc.).
+    userland: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$app$2f$api$2f$offers$2f$route$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__,
+    // In Turbopack dev mode, also provide a getter that calls require() on every
+    // request. This re-reads from devModuleCache so HMR updates are picked up,
+    // and the async wrapper unwraps async-module Promises (ESM-only
+    // serverExternalPackages) automatically.
+    ...("TURBOPACK compile-time truthy", 1) ? {
+        getUserland: ()=>__turbopack_context__.A("[project]/src/app/api/offers/route.ts [app-route] (ecmascript, async loader)")
+    } : "TURBOPACK unreachable"
+});
+// Pull out the exports that we need to expose from the module. This should
+// be eliminated when we've moved the other routes to the new format. These
+// are used to hook into the route.
+const { workAsyncStorage, workUnitAsyncStorage, serverHooks } = routeModule;
+function patchFetch() {
+    return _patchFetch({
+        workAsyncStorage,
+        workUnitAsyncStorage
+    });
+}
+;
+async function handler(req, res, ctx) {
+    if (ctx.requestMeta) {
+        (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$request$2d$meta$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["setRequestMeta"])(req, ctx.requestMeta);
+    }
+    if (routeModule.isDev) {
+        (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$request$2d$meta$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["addRequestMeta"])(req, 'devRequestTimingInternalsEnd', process.hrtime.bigint());
+    }
+    let srcPage = "/api/offers/route";
+    // turbopack doesn't normalize `/index` in the page name
+    // so we need to to process dynamic routes properly
+    // TODO: fix turbopack providing differing value from webpack
+    if ("TURBOPACK compile-time truthy", 1) {
+        srcPage = srcPage.replace(/\/index$/, '') || '/';
+    } else if (srcPage === '/index') {
+        // we always normalize /index specifically
+        srcPage = '/';
+    }
+    const multiZoneDraftMode = ("TURBOPACK compile-time value", false);
+    const prepareResult = await routeModule.prepare(req, res, {
+        srcPage,
+        multiZoneDraftMode
+    });
+    if (!prepareResult) {
+        res.statusCode = 400;
+        res.end('Bad Request');
+        ctx.waitUntil == null ? void 0 : ctx.waitUntil.call(ctx, Promise.resolve());
+        return null;
+    }
+    const { buildId, deploymentId, params, nextConfig, parsedUrl, isDraftMode, prerenderManifest, routerServerContext, isOnDemandRevalidate, revalidateOnlyGenerated, resolvedPathname, clientReferenceManifest, serverActionsManifest } = prepareResult;
+    const normalizedSrcPage = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$shared$2f$lib$2f$router$2f$utils$2f$app$2d$paths$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["normalizeAppPath"])(srcPage);
+    let isIsr = Boolean(prerenderManifest.dynamicRoutes[normalizedSrcPage] || prerenderManifest.routes[resolvedPathname]);
+    const render404 = async ()=>{
+        // TODO: should route-module itself handle rendering the 404
+        if (routerServerContext == null ? void 0 : routerServerContext.render404) {
+            await routerServerContext.render404(req, res, parsedUrl, false);
+        } else {
+            res.end('This page could not be found');
+        }
+        return null;
+    };
+    if (isIsr && !isDraftMode) {
+        const isPrerendered = Boolean(prerenderManifest.routes[resolvedPathname]);
+        const prerenderInfo = prerenderManifest.dynamicRoutes[normalizedSrcPage];
+        if (prerenderInfo) {
+            if (prerenderInfo.fallback === false && !isPrerendered) {
+                if (nextConfig.adapterPath) {
+                    return await render404();
+                }
+                throw new __TURBOPACK__imported__module__$5b$externals$5d2f$next$2f$dist$2f$shared$2f$lib$2f$no$2d$fallback$2d$error$2e$external$2e$js__$5b$external$5d$__$28$next$2f$dist$2f$shared$2f$lib$2f$no$2d$fallback$2d$error$2e$external$2e$js$2c$__cjs$29$__["NoFallbackError"]();
+            }
+        }
+    }
+    let cacheKey = null;
+    if (isIsr && !routeModule.isDev && !isDraftMode) {
+        cacheKey = resolvedPathname;
+        // ensure /index and / is normalized to one key
+        cacheKey = cacheKey === '/index' ? '/' : cacheKey;
+    }
+    const supportsDynamicResponse = routeModule.isDev === true || // If this is not SSG or does not have static paths, then it supports
+    // dynamic HTML.
+    !isIsr;
+    // This is a revalidation request if the request is for a static
+    // page and it is not being resumed from a postponed render and
+    // it is not a dynamic RSC request then it is a revalidation
+    // request.
+    const isStaticGeneration = isIsr && !supportsDynamicResponse;
+    // Before rendering (which initializes component tree modules), we have to
+    // set the reference manifests to our global store so Server Action's
+    // encryption util can access to them at the top level of the page module.
+    if (serverActionsManifest && clientReferenceManifest) {
+        setManifestsSingleton({
+            page: srcPage,
+            clientReferenceManifest,
+            serverActionsManifest
+        });
+    }
+    const method = req.method || 'GET';
+    const tracer = getTracer();
+    const activeSpan = tracer.getActiveScopeSpan();
+    const isWrappedByNextServer = Boolean(routerServerContext == null ? void 0 : routerServerContext.isWrappedByNextServer);
+    const isMinimalMode = Boolean((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$request$2d$meta$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getRequestMeta"])(req, 'minimalMode'));
+    const incrementalCache = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$request$2d$meta$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getRequestMeta"])(req, 'incrementalCache') || await routeModule.getIncrementalCache(req, nextConfig, prerenderManifest, isMinimalMode);
+    incrementalCache == null ? void 0 : incrementalCache.resetRequestCache();
+    globalThis.__incrementalCache = incrementalCache;
+    const context = {
+        params,
+        previewProps: prerenderManifest.preview,
+        renderOpts: {
+            experimental: {
+                authInterrupts: Boolean(nextConfig.experimental.authInterrupts)
+            },
+            cacheComponents: Boolean(nextConfig.cacheComponents),
+            supportsDynamicResponse,
+            incrementalCache,
+            cacheLifeProfiles: nextConfig.cacheLife,
+            waitUntil: ctx.waitUntil,
+            onClose: (cb)=>{
+                res.on('close', cb);
+            },
+            onAfterTaskError: undefined,
+            onInstrumentationRequestError: (error, _request, errorContext, silenceLog)=>routeModule.onRequestError(req, error, errorContext, silenceLog, routerServerContext)
+        },
+        sharedContext: {
+            buildId,
+            deploymentId
+        }
+    };
+    const nodeNextReq = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$base$2d$http$2f$node$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NodeNextRequest"](req);
+    const nodeNextRes = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$base$2d$http$2f$node$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NodeNextResponse"](res);
+    const nextReq = NextRequestAdapter.fromNodeNextRequest(nodeNextReq, signalFromNodeResponse(res));
+    try {
+        let parentSpan;
+        const invokeRouteModule = async (span)=>{
+            return routeModule.handle(nextReq, context).finally(()=>{
+                if (!span) return;
+                span.setAttributes({
+                    'http.status_code': res.statusCode,
+                    'next.rsc': false
+                });
+                const rootSpanAttributes = tracer.getRootSpanAttributes();
+                // We were unable to get attributes, probably OTEL is not enabled
+                if (!rootSpanAttributes) {
+                    return;
+                }
+                if (rootSpanAttributes.get('next.span_type') !== BaseServerSpan.handleRequest) {
+                    console.warn(`Unexpected root span type '${rootSpanAttributes.get('next.span_type')}'. Please report this Next.js issue https://github.com/vercel/next.js`);
+                    return;
+                }
+                const route = rootSpanAttributes.get('next.route');
+                if (route) {
+                    const name = `${method} ${route}`;
+                    span.setAttributes({
+                        'next.route': route,
+                        'http.route': route,
+                        'next.span_name': name
+                    });
+                    span.updateName(name);
+                    // Propagate http.route to the parent span if one exists (e.g.
+                    // a platform-created HTTP span in adapter deployments).
+                    if (parentSpan && parentSpan !== span) {
+                        parentSpan.setAttribute('http.route', route);
+                        parentSpan.updateName(name);
+                    }
+                } else {
+                    span.updateName(`${method} ${srcPage}`);
+                }
+            });
+        };
+        const handleResponse = async (currentSpan)=>{
+            var _cacheEntry_value;
+            const responseGenerator = async ({ previousCacheEntry })=>{
+                try {
+                    if (!isMinimalMode && isOnDemandRevalidate && revalidateOnlyGenerated && !previousCacheEntry) {
+                        res.statusCode = 404;
+                        // on-demand revalidate always sets this header
+                        res.setHeader('x-nextjs-cache', 'REVALIDATED');
+                        res.end('This page could not be found');
+                        return null;
+                    }
+                    const response = await invokeRouteModule(currentSpan);
+                    req.fetchMetrics = context.renderOpts.fetchMetrics;
+                    let pendingWaitUntil = context.renderOpts.pendingWaitUntil;
+                    // Attempt using provided waitUntil if available
+                    // if it's not we fallback to sendResponse's handling
+                    if (pendingWaitUntil) {
+                        if (ctx.waitUntil) {
+                            ctx.waitUntil(pendingWaitUntil);
+                            pendingWaitUntil = undefined;
+                        }
+                    }
+                    const cacheTags = context.renderOpts.collectedTags;
+                    // If the request is for a static response, we can cache it so long
+                    // as it's not edge.
+                    if (isIsr) {
+                        const blob = await response.blob();
+                        // Copy the headers from the response.
+                        const headers = toNodeOutgoingHttpHeaders(response.headers);
+                        if (cacheTags) {
+                            headers[__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$constants$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NEXT_CACHE_TAGS_HEADER"]] = cacheTags;
+                        }
+                        if (!headers['content-type'] && blob.type) {
+                            headers['content-type'] = blob.type;
+                        }
+                        const revalidate = typeof context.renderOpts.collectedRevalidate === 'undefined' || context.renderOpts.collectedRevalidate >= __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$constants$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["INFINITE_CACHE"] ? false : context.renderOpts.collectedRevalidate;
+                        const expire = typeof context.renderOpts.collectedExpire === 'undefined' || context.renderOpts.collectedExpire >= __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$constants$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["INFINITE_CACHE"] ? undefined : context.renderOpts.collectedExpire;
+                        // Create the cache entry for the response.
+                        const cacheEntry = {
+                            value: {
+                                kind: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$types$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["CachedRouteKind"].APP_ROUTE,
+                                status: response.status,
+                                body: Buffer.from(await blob.arrayBuffer()),
+                                headers
+                            },
+                            cacheControl: {
+                                revalidate,
+                                expire
+                            }
+                        };
+                        return cacheEntry;
+                    } else {
+                        // send response without caching if not ISR
+                        await sendResponse(nodeNextReq, nodeNextRes, response, context.renderOpts.pendingWaitUntil);
+                        return null;
+                    }
+                } catch (err) {
+                    // if this is a background revalidate we need to report
+                    // the request error here as it won't be bubbled
+                    if (previousCacheEntry == null ? void 0 : previousCacheEntry.isStale) {
+                        const silenceLog = false;
+                        await routeModule.onRequestError(req, err, {
+                            routerKind: 'App Router',
+                            routePath: srcPage,
+                            routeType: 'route',
+                            revalidateReason: getRevalidateReason({
+                                isStaticGeneration,
+                                isOnDemandRevalidate
+                            })
+                        }, silenceLog, routerServerContext);
+                    }
+                    throw err;
+                }
+            };
+            const cacheEntry = await routeModule.handleResponse({
+                req,
+                nextConfig,
+                cacheKey,
+                routeKind: RouteKind.APP_ROUTE,
+                isFallback: false,
+                prerenderManifest,
+                isRoutePPREnabled: false,
+                isOnDemandRevalidate,
+                revalidateOnlyGenerated,
+                responseGenerator,
+                waitUntil: ctx.waitUntil,
+                isMinimalMode
+            });
+            // we don't create a cacheEntry for ISR
+            if (!isIsr) {
+                return null;
+            }
+            if ((cacheEntry == null ? void 0 : (_cacheEntry_value = cacheEntry.value) == null ? void 0 : _cacheEntry_value.kind) !== __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$response$2d$cache$2f$types$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["CachedRouteKind"].APP_ROUTE) {
+                var _cacheEntry_value1;
+                throw Object.defineProperty(new Error(`Invariant: app-route received invalid cache entry ${cacheEntry == null ? void 0 : (_cacheEntry_value1 = cacheEntry.value) == null ? void 0 : _cacheEntry_value1.kind}`), "__NEXT_ERROR_CODE", {
+                    value: "E701",
+                    enumerable: false,
+                    configurable: true
+                });
+            }
+            if (!isMinimalMode) {
+                res.setHeader('x-nextjs-cache', isOnDemandRevalidate ? 'REVALIDATED' : cacheEntry.isMiss ? 'MISS' : cacheEntry.isStale ? 'STALE' : 'HIT');
+            }
+            // Draft mode should never be cached
+            if (isDraftMode) {
+                res.setHeader('Cache-Control', 'private, no-cache, no-store, max-age=0, must-revalidate');
+            }
+            const headers = fromNodeOutgoingHttpHeaders(cacheEntry.value.headers);
+            if (!(isMinimalMode && isIsr)) {
+                headers.delete(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$lib$2f$constants$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NEXT_CACHE_TAGS_HEADER"]);
+            }
+            // If cache control is already set on the response we don't
+            // override it to allow users to customize it via next.config
+            if (cacheEntry.cacheControl && !res.getHeader('Cache-Control') && !headers.get('Cache-Control')) {
+                headers.set('Cache-Control', getCacheControlHeader(cacheEntry.cacheControl));
+            }
+            await sendResponse(nodeNextReq, nodeNextRes, new Response(cacheEntry.value.body, {
+                headers,
+                status: cacheEntry.value.status || 200
+            }));
+            return null;
+        };
+        // TODO: activeSpan code path is for when wrapped by
+        // next-server can be removed when this is no longer used
+        if (isWrappedByNextServer && activeSpan) {
+            await handleResponse(activeSpan);
+        } else {
+            parentSpan = tracer.getActiveScopeSpan();
+            await tracer.withPropagatedContext(req.headers, ()=>tracer.trace(BaseServerSpan.handleRequest, {
+                    spanName: `${method} ${srcPage}`,
+                    kind: SpanKind.SERVER,
+                    attributes: {
+                        'http.method': method,
+                        'http.target': req.url
+                    }
+                }, handleResponse), undefined, !isWrappedByNextServer);
+        }
+    } catch (err) {
+        if (!(err instanceof __TURBOPACK__imported__module__$5b$externals$5d2f$next$2f$dist$2f$shared$2f$lib$2f$no$2d$fallback$2d$error$2e$external$2e$js__$5b$external$5d$__$28$next$2f$dist$2f$shared$2f$lib$2f$no$2d$fallback$2d$error$2e$external$2e$js$2c$__cjs$29$__["NoFallbackError"])) {
+            const silenceLog = false;
+            await routeModule.onRequestError(req, err, {
+                routerKind: 'App Router',
+                routePath: normalizedSrcPage,
+                routeType: 'route',
+                revalidateReason: getRevalidateReason({
+                    isStaticGeneration,
+                    isOnDemandRevalidate
+                })
+            }, silenceLog, routerServerContext);
+        }
+        // rethrow so that we can handle serving error page
+        // If this is during static generation, throw the error again.
+        if (isIsr) throw err;
+        // Otherwise, send a 500 response.
+        await sendResponse(nodeNextReq, nodeNextRes, new Response(null, {
+            status: 500
+        }));
+        return null;
+    }
+}
+__turbopack_async_result__();
+} catch(e) { __turbopack_async_result__(e); } }, false);}),
+];
+
+//# sourceMappingURL=%5Broot-of-the-server%5D__0uhm_x3._.js.map

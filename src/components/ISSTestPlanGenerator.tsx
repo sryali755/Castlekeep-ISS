@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2, CheckCircle, AlertCircle, Download, FileSpreadsheet } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, Download, FileSpreadsheet } from '@/lib/icons';
 
 interface GenerationStep {
   id: string;

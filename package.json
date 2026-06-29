@@ -13,7 +13,6 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "exceljs": "^4.4.0",
-    "lucide-react": "^0.394.0",
     "next": "16.2.9",
     "pg": "^8.22.0",
     "react": "^19",
